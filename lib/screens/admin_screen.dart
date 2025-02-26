@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_drawer.dart';
-import '../utils/navigation_helper.dart';
 
 class AdminScreen extends StatelessWidget {
   @override
@@ -49,35 +48,30 @@ class AdminScreen extends StatelessWidget {
               const SizedBox(height: 70),
               CustomButton(
                 title: "طلبات الاستئذان",
-                onPressed:
-                    () => NavigationHelper.navigateTo(
-                      context,
-                      '/PermissionRequests',
-                    ),
+                onPressed: () {
+                  print("تم الضغط على طلبات الاستئذان");
+                },
               ),
               const SizedBox(height: 35),
               CustomButton(
                 title: "تصاريح الخروج من الحصة",
-                onPressed:
-                    () => NavigationHelper.navigateTo(context, '/ExitPermits'),
+                onPressed: () {
+                  print("تم الضغط على تصاريح الخروج من الحصة");
+                },
               ),
               const SizedBox(height: 35),
               CustomButton(
                 title: "حضور الطلاب",
-                onPressed:
-                    () => NavigationHelper.navigateTo(
-                      context,
-                      '/StudentAttendance',
-                    ),
+                onPressed: () {
+                  print("تم الضغط على حضور الطلاب");
+                },
               ),
               const SizedBox(height: 35),
               CustomButton(
                 title: "الطلبات السابقة",
-                onPressed:
-                    () => NavigationHelper.navigateTo(
-                      context,
-                      '/PreviousRequests',
-                    ),
+                onPressed: () {
+                  print("تم الضغط على الطلبات السابقة");
+                },
               ),
             ],
           ),

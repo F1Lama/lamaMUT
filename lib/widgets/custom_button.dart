@@ -9,16 +9,16 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 260,
-      height: 60,
+      width: double.infinity,
       child: MaterialButton(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        height: 50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         color: const Color.fromARGB(255, 1, 113, 189),
         textColor: Colors.white,
         onPressed: onPressed,
         child: Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
     );

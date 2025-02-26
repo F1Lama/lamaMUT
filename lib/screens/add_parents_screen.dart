@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import '../widgets/file_picker_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // إضافة Firestore
+import '../widgets/file_upload_widget.dart';
 
-class AddParentsScreen extends StatefulWidget {
-  @override
-  _AddParentsScreenState createState() => _AddParentsScreenState();
-}
-
-class _AddParentsScreenState extends State<AddParentsScreen> {
-  String? selectedFileName;
+class AddParentsScreen extends StatelessWidget {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -32,42 +28,45 @@ class _AddParentsScreenState extends State<AddParentsScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            FilePickerWidget(
-              onFileSelected: (fileName) {
-                setState(() {
-                  selectedFileName = fileName;
-                });
-              },
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 1, 113, 189),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              onPressed: () {
-                if (selectedFileName != null) {
-                  print("تم تأكيد رفع الملف: $selectedFileName");
-                } else {
-                  print("لم يتم اختيار ملف بعد!");
+        child: FileUploadWidget(
+          title: "إضافة أولياء الأمور",
+          onConfirm: (fileName, fileData) async {
+            if (fileData != null) {
+              try {
+                for (var row in fileData) {
+                  // التحقق من صحة الصف
+                  if (row.isNotEmpty && row.length >= 3) {
+                    await firestore.collection('parents').add({
+                      'id': row[0], // العمود الأول (مثل ID)
+                      'name': row[1], // العمود الثاني (مثل الاسم)
+                      'phone': row[2], // العمود الثالث (مثل الهاتف)
+                    });
+                    print("تمت إضافة الصف: $row");
+                  } else {
+                    print("صف غير صالح: $row");
+                  }
                 }
-              },
-              child: const Text(
-                "تأكيد",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+                // عرض رسالة نجاح
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("تم تخزين بيانات أولياء الأمور بنجاح!"),
+                  ),
+                );
+              } catch (e) {
+                // طباعة الخطأ في الكونسول
+                print("خطأ أثناء التخزين: $e");
+                // عرض رسالة خطأ للمستخدم
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("حدث خطأ أثناء التخزين: $e")),
+                );
+              }
+            } else {
+              // إذا لم يتم اختيار ملف
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("لم يتم اختيار ملف!")),
+              );
+            }
+          },
         ),
       ),
     );

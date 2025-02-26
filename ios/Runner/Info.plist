@@ -47,3 +47,7 @@
 	<true/>
 </dict>
 </plist>
+<key>NSDocumentsFolderUsageDescription</key>
+<string>نحتاج إلى الوصول إلى الملفات لتحميل البيانات.</string>
+<key>NSDownloadsFolderUsageDescription</key>
+<string>نحتاج إلى الوصول إلى الملفات لتحميل البيانات.</string>

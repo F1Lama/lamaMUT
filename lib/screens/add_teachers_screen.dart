@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // إضافة Firestore
+import '../widgets/file_upload_widget.dart';
 
-class AddTeachersScreen extends StatefulWidget {
-  @override
-  _AddTeachersScreenState createState() => _AddTeachersScreenState();
-}
-
-class _AddTeachersScreenState extends State<AddTeachersScreen> {
-  String? selectedFileName;
-
-  Future<void> pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-    );
-    if (result != null) {
-      setState(() {
-        selectedFileName = result.files.single.name;
-      });
-    } else {
-      print("لم يتم اختيار أي ملف");
-    }
-  }
+class AddTeachersScreen extends StatelessWidget {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -41,67 +23,48 @@ class _AddTeachersScreenState extends State<AddTeachersScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: pickFile,
-              child: Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text(
-                    selectedFileName ?? "اختر ملف CSV",
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 1, 113, 189),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                onPressed: () {
-                  if (selectedFileName != null) {
-                    print("تم تأكيد رفع الملف: $selectedFileName");
+        child: FileUploadWidget(
+          title: "إضافة المعلمين",
+          onConfirm: (fileName, fileData) async {
+            if (fileData != null) {
+              try {
+                for (var row in fileData) {
+                  // التحقق من صحة الصف
+                  if (row.isNotEmpty && row.length >= 3) {
+                    await firestore.collection('teachers').add({
+                      'id': row[0], // العمود الأول (مثل ID)
+                      'name': row[1], // العمود الثاني (مثل الاسم)
+                      'phone': row[2], // العمود الثالث (مثل الهاتف)
+                    });
+                    print("تمت إضافة الصف: $row");
                   } else {
-                    print("لم يتم اختيار ملف بعد!");
+                    print("صف غير صالح: $row");
                   }
-                },
-                child: const Text(
-                  "تأكيد",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
+                }
+                // عرض رسالة نجاح
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("تم تخزين بيانات المعلمين بنجاح!")),
+                );
+              } catch (e) {
+                // طباعة الخطأ في الكونسول
+                print("خطأ أثناء التخزين: $e");
+                // عرض رسالة خطأ للمستخدم
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("حدث خطأ أثناء التخزين: $e")),
+                );
+              }
+            } else {
+              // إذا لم يتم اختيار ملف
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("لم يتم اختيار ملف!")),
+              );
+            }
+          },
         ),
       ),
     );
