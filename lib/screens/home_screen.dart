@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
-import 'admin_screen.dart'; // استيراد شاشة الموظفين
+import 'login_employee_screen.dart'; // استيراد شاشة الموظفين
 import 'package:map/screens/login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -23,7 +23,6 @@ class HomeScreen extends StatelessWidget {
                 height: 189,
               ),
               const SizedBox(height: 70),
-              // زر "المدرسة"
 
               // زر "المدرسة"
               CustomButton(
@@ -44,7 +43,9 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AdminScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => LoginEmployeeScreen(),
+                    ),
                   );
                 },
               ),

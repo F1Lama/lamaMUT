@@ -4,7 +4,7 @@ import 'firebase_options.dart'; // استيراد ملف التكوين
 import 'package:map/screens/add_admin_screen.dart';
 import 'package:map/screens/modifyAdminScreen.dart';
 import 'package:map/screens/login_screen.dart';
-import 'package:map/screens/logout.dart';
+//import 'package:map/screens/logout.dart';
 import 'package:map/screens/welcome_screen.dart';
 
 void main() async {
@@ -31,9 +31,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const WelcomeScreen(), // شاشة الترحيب
         '/login': (context) => LoginSchoolScreen(), // شاشة تسجيل الدخول
-        '/logout': (context) => LogoutScreen(), // شاشة تسجيل الخروج
+        //'/logout': (context) => LogoutScreen(), // شاشة تسجيل الخروج
         '/AddAdminScreen': (context) => AddAdminScreen(), // شاشة إضافة مشرف
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
+
+        // '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
       },
     );
   }

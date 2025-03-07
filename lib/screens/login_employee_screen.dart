@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:map/screens/admin_screen.dart';
+import 'package:map/screens/teacher_screen.dart';
 
 class LoginEmployeeScreen extends StatefulWidget {
   const LoginEmployeeScreen({Key? key}) : super(key: key);
@@ -28,49 +29,35 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         return;
       }
 
-      // البحث عن الموظف في Firestore باستخدام الـ ID
-      var querySnapshot =
+      // البحث في مجموعة الإداريين
+      var adminQuery =
           await FirebaseFirestore.instance
               .collection('admins')
               .where('id', isEqualTo: id)
               .limit(1)
               .get();
 
-      if (querySnapshot.docs.isEmpty) {
+      // البحث في مجموعة المعلمين إذا لم يكن إداريًا
+      var teacherQuery =
+          await FirebaseFirestore.instance
+              .collection('teachers')
+              .where('id', isEqualTo: id)
+              .limit(1)
+              .get();
+
+      // التحقق من وجود الحساب في أي من المجموعتين
+      if (adminQuery.docs.isNotEmpty) {
+        _validateAndNavigate(adminQuery.docs.first, password, "admin");
+      } else if (teacherQuery.docs.isNotEmpty) {
+        _validateAndNavigate(teacherQuery.docs.first, password, "teacher");
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("الحساب غير موجود"),
             backgroundColor: Colors.red,
           ),
         );
-        return;
       }
-
-      var employeeData = querySnapshot.docs.first.data();
-      String storedPassword = employeeData['password'];
-
-      if (storedPassword != password) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("كلمة المرور غير صحيحة"),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      // نجاح تسجيل الدخول
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("تم تسجيل الدخول بنجاح!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => AdminScreen()),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -79,6 +66,40 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         ),
       );
     }
+  }
+
+  void _validateAndNavigate(
+    DocumentSnapshot userDoc,
+    String password,
+    String role,
+  ) {
+    var userData = userDoc.data() as Map<String, dynamic>;
+    String storedPassword = userData['password'];
+
+    if (storedPassword != password) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("كلمة المرور غير صحيحة"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // نجاح تسجيل الدخول وتحديد الصفحة المناسبة
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("تم تسجيل الدخول بنجاح!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Widget nextScreen = (role == "admin") ? AdminScreen() : StudyStageScreen();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => nextScreen),
+    );
   }
 
   @override
@@ -100,7 +121,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // يرجع إلى الصفحة السابقة
+            Navigator.pop(context);
           },
         ),
       ),

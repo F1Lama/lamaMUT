@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_drawer.dart';
+import 'exit_permits_screen.dart';
+import 'package:map/screens/PreviousRequestsScreen.dart'; // استيراد واجهة الطلبات السابقة
 
 class AdminScreen extends StatelessWidget {
   @override
@@ -56,7 +58,12 @@ class AdminScreen extends StatelessWidget {
               CustomButton(
                 title: "تصاريح الخروج من الحصة",
                 onPressed: () {
-                  print("تم الضغط على تصاريح الخروج من الحصة");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ExitPermitsScreen(),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 35),
@@ -70,7 +77,13 @@ class AdminScreen extends StatelessWidget {
               CustomButton(
                 title: "الطلبات السابقة",
                 onPressed: () {
-                  print("تم الضغط على الطلبات السابقة");
+                  // التنقل إلى واجهة الطلبات السابقة
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PreviousRequestsScreen(),
+                    ),
+                  );
                 },
               ),
             ],

@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // إضافة Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/file_upload_widget.dart';
 
 class AddStudentsScreen extends StatelessWidget {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // خريطة لتحويل الأسماء العربية إلى الإنجليزية
+  final Map<String, String> stageMap = {
+    "أولى ثانوي": "first",
+    "ثاني ثانوي": "second",
+    "ثالث ثانوي": "third",
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +41,47 @@ class AddStudentsScreen extends StatelessWidget {
             if (fileData != null) {
               try {
                 for (var row in fileData) {
-                  if (row.isNotEmpty && row.length >= 3) {
-                    await firestore.collection('students').add({
-                      'id': row[0], // العمود الأول (مثل ID)
-                      'name': row[1], // العمود الثاني (مثل الاسم)
-                      'phone': row[2], // العمود الثالث (مثل الهاتف)
-                    });
-                    print("تمت إضافة الصف: $row");
+                  if (row.isNotEmpty && row.length >= 4) {
+                    // قراءة البيانات من الصف وتنسيقها
+                    final studentId = row[0].trim();
+                    final studentName = row[1].trim();
+                    final schoolClass = row[2].trim();
+                    final stage = row[3].trim();
+
+                    // تحويل المرحلة إلى اللغة الإنجليزية
+                    final formattedStage =
+                        stageMap[stage] ?? stage.toLowerCase();
+
+                    // التحقق من صحة المرحلة والكلاس
+                    final validStages = ['first', 'second', 'third'];
+                    final validClasses = ['1', '2', '3', '4', '5', '6'];
+
+                    if (!validStages.contains(formattedStage)) {
+                      print("مرحلة غير صالحة: $formattedStage");
+                      continue;
+                    }
+
+                    if (!validClasses.contains(schoolClass)) {
+                      print("كلاس غير صالح: $schoolClass");
+                      continue;
+                    }
+
+                    // إضافة الطالب إلى Firestore
+                    await firestore
+                        .collection('stages') // المجموعة الرئيسية
+                        .doc(formattedStage) // المرحلة (مثل "first")
+                        .collection(schoolClass) // الكلاس (مثل "1")
+                        .doc(studentId.toString()) // ID الطالب كمفتاح للمستند
+                        .set({
+                          'id': studentId,
+                          'name': studentName,
+                          'schoolClass': schoolClass,
+                          'stage': formattedStage,
+                        });
+
+                    print(
+                      "تمت إضافة الطالب: $studentName في المرحلة: $formattedStage والكلاس: $schoolClass",
+                    );
                   } else {
                     print("صف غير صالح: $row");
                   }
@@ -49,7 +90,7 @@ class AddStudentsScreen extends StatelessWidget {
                   SnackBar(content: Text("تم تخزين بيانات الطلاب بنجاح!")),
                 );
               } catch (e) {
-                print("خطأ أثناء التخزين: $e"); // طباعة الخطأ في الكونسول
+                print("خطأ أثناء التخزين: $e");
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("حدث خطأ أثناء التخزين: $e")),
                 );
