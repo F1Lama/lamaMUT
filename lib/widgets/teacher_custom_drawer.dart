@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:map/screens/logout.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:map/screens/login_employee_screen.dart';
+//import 'package:map/screens/login_screen.dart'; // استيراد صفحة تسجيل الدخول
 
 class TeacherCustomDrawer extends StatelessWidget {
+  Future<void> _signOut(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      // توجيه إلى صفحة تسجيل الدخول باستخدام MaterialPageRoute
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginEmployeeScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("فشل تسجيل الخروج: ${e.toString()}")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -11,14 +29,7 @@ class TeacherCustomDrawer extends StatelessWidget {
           drawerItem(
             title: "تسجيل خروج",
             icon: Icons.logout,
-            onTap: () {
-              // تنفيذ تسجيل الخروج كما في LogoutScreen
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/HomeScreen', // استبدلها بمسار الصفحة الرئيسية
-                (route) => false, // إزالة جميع الصفحات الأخرى من المكدس
-              );
-            },
+            onTap: () => _signOut(context),
           ),
           const SizedBox(height: 20),
         ],

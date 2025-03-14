@@ -94,7 +94,16 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
       ),
     );
 
-    Widget nextScreen = (role == "admin") ? AdminScreen() : StudyStageScreen();
+    Widget nextScreen;
+    if (role == "admin") {
+      nextScreen = AdminScreen();
+    } else {
+      // افترض أن هناك مدة محددة في بيانات المستخدم
+      int exitMinutes = userData['exitDuration'] ?? 10; // افتراضياً 10 دقائق
+      nextScreen = StudyStageScreen(
+        exitDuration: Duration(minutes: exitMinutes),
+      );
+    }
 
     Navigator.pushReplacement(
       context,

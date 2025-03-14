@@ -1,9 +1,81 @@
-// study_stage_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:map/screens/class_screen.dart'; // استيراد صفحة classScreen
-import 'package:map/widgets/teacher_custom_drawer.dart'; // استيراد القائمة الجانبية
+import 'package:map/screens/PreviousRequestsScreen.dart';
+import 'package:map/screens/class_screen.dart';
+import 'alert_screen.dart'; // استيراد صفحة AlertScreen
 
-class StudyStageScreen extends StatelessWidget {
+class StudyStageScreen extends StatefulWidget {
+  final Duration exitDuration; // المدة المحددة
+
+  StudyStageScreen({required this.exitDuration});
+
+  @override
+  _StudyStageScreenState createState() => _StudyStageScreenState();
+}
+
+class _StudyStageScreenState extends State<StudyStageScreen>
+    with WidgetsBindingObserver {
+  DateTime? exitTime; // وقت انتهاء الطلب
+  bool isTimerFinished = false; // لتحديد ما إذا انتهى المؤقت أم لا
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    exitTime = DateTime.now().add(widget.exitDuration); // استخدام المدة المحددة
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // عندما يعود المستخدم إلى التطبيق، تحقق من الوقت المتبقي
+      if (exitTime != null && DateTime.now().isAfter(exitTime!)) {
+        setState(() {
+          isTimerFinished = true;
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AlertScreen()),
+        );
+      }
+    }
+  }
+
+  void startTimer() {
+    if (exitTime != null) {
+      Duration remainingTime = exitTime!.difference(DateTime.now());
+      if (remainingTime > Duration.zero) {
+        print("المؤقت بدأ. الوقت المتبقي: ${remainingTime.inSeconds} ثانية");
+        Timer(remainingTime, () {
+          print("المؤقت انتهى!");
+          setState(() {
+            isTimerFinished = true;
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AlertScreen()),
+          );
+        });
+      } else {
+        print("الوقت قد انتهى بالفعل.");
+        setState(() {
+          isTimerFinished = true;
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AlertScreen()),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,26 +85,9 @@ class StudyStageScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            // العودة إلى الصفحة السابقة
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () {
-                    Scaffold.of(
-                      context,
-                    ).openEndDrawer(); // فتح القائمة الجانبية
-                  },
-                ),
-          ),
-        ],
       ),
-      endDrawer: TeacherCustomDrawer(), // القائمة الجانبية
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -46,7 +101,6 @@ class StudyStageScreen extends StatelessWidget {
             CustomButton(
               title: "طلب جديد",
               onPressed: () {
-                // الانتقال إلى صفحة classScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ClassScreen()),
@@ -54,7 +108,29 @@ class StudyStageScreen extends StatelessWidget {
               },
             ),
             SizedBox(height: 15),
-            CustomButton(title: "الطلبات السابقة", onPressed: () {}),
+            CustomButton(
+              title: "الطلبات السابقة",
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PreviousRequestsScreen(),
+                  ),
+                );
+              },
+            ),
+            if (isTimerFinished)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(
+                  "انتهت مدة الخروج!",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

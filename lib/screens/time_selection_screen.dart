@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:map/screens/exit_permits_screen.dart';
+import 'package:map/screens/teacher_screen.dart'; // استيراد صفحة StudyStageScreen
 
 class TimeSelectionScreen extends StatefulWidget {
-  final String studentName; // اسم الطالب المحدد
-  final String grade; // الصف الدراسي
-  final String teacherName; // اسم المعلمة
+  final String studentName;
+  final String grade;
+  final String teacherName;
 
   TimeSelectionScreen({
     required this.studentName,
@@ -20,7 +21,7 @@ class TimeSelectionScreen extends StatefulWidget {
 class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
   bool isTenMinutesSelected = false;
   bool isOtherSelected = false;
-  Duration selectedDuration = Duration(minutes: 3);
+  Duration selectedDuration = Duration(minutes: 3); // المدة الافتراضية
 
   void _showTimerPicker(BuildContext context) {
     showModalBottomSheet(
@@ -51,9 +52,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
         title: Text("تحديد الوقت", style: TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -61,7 +60,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
         child: Column(
           children: [
             Text(
-              "اسم الطالب: ${widget.studentName}", // عرض اسم الطالب
+              "اسم الطالب: ${widget.studentName}",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -74,9 +73,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                     setState(() {
                       isTenMinutesSelected = value!;
                       isOtherSelected = false;
-                      selectedDuration = Duration(
-                        minutes: 10,
-                      ); // تحديد مدة 10 دقائق
+                      selectedDuration = Duration(minutes: 10);
                     });
                   },
                 ),
@@ -118,20 +115,60 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
             ),
             Spacer(),
             MaterialButton(
-              onPressed: () {
-                // حساب وقت الخروج بناءً على الوقت الحالي والمدة المحددة
-                DateTime now = DateTime.now();
-                DateTime exitTime = now.add(selectedDuration);
+              onPressed: () async {
+                try {
+                  // التحقق من اختيار المدة
+                  if (!isTenMinutesSelected && !isOtherSelected) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("حدد المدة أولا"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+                  // التحقق من أن المستخدم غير المدة عند اختيار "أخرى"
+                  if (isOtherSelected &&
+                      selectedDuration == Duration(minutes: 3)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("حدد مدة مختلفة من القائمة"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+                  // حساب وقت الخروج بناءً على الوقت الحالي والمدة المحددة
+                  DateTime now = DateTime.now();
+                  DateTime exitTime = now.add(selectedDuration);
 
-                // إضافة بيانات الطلب إلى Firestore
-                ExitPermitsScreen.addStudent(
-                  studentName: widget.studentName,
-                  grade: widget.grade,
-                  teacherName: widget.teacherName,
-                  exitTime: exitTime.toIso8601String(), // تخزين الوقت بصيغة ISO
-                );
+                  // إضافة الطلب إلى Firestore
+                  await ExitPermitsScreen.addStudent(
+                    studentName: widget.studentName,
+                    grade: widget.grade,
+                    teacherName: widget.teacherName,
+                    exitTime: exitTime.toIso8601String(),
+                  );
 
-                Navigator.pop(context); // العودة إلى الصفحة السابقة
+                  // التنقل إلى صفحة StudyStageScreen مع تمرير المدة المحددة
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              StudyStageScreen(exitDuration: selectedDuration),
+                    ),
+                    (route) => false, // إزالة جميع الصفحات السابقة من المكدس
+                  );
+                } catch (e) {
+                  print("حدث خطأ: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("حدث خطأ أثناء معالجة الطلب"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               color: Color.fromARGB(255, 1, 113, 189),
               textColor: Colors.white,

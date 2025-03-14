@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_button.dart';
+import 'package:map/screens/PreviousRequestsScreen.dart';
+import '../widgets/custom_button.dart'; // استيراد الزر الصحيح
 import '../widgets/custom_drawer.dart';
 import 'exit_permits_screen.dart';
-import 'package:map/screens/PreviousRequestsScreen.dart'; // استيراد واجهة الطلبات السابقة
+import 'class_screen.dart' hide CustomButton; // إخفاء الزر المتعارض
 
 class AdminScreen extends StatelessWidget {
   @override
@@ -27,15 +28,13 @@ class AdminScreen extends StatelessWidget {
                 (context) => IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
-                    Scaffold.of(
-                      context,
-                    ).openEndDrawer(); // فتح القائمة الجانبية
+                    Scaffold.of(context).openEndDrawer();
                   },
                 ),
           ),
         ],
       ),
-      endDrawer: CustomDrawer(), // القائمة الجانبية
+      endDrawer: CustomDrawer(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -70,14 +69,16 @@ class AdminScreen extends StatelessWidget {
               CustomButton(
                 title: "حضور الطلاب",
                 onPressed: () {
-                  print("تم الضغط على حضور الطلاب");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ClassScreen()),
+                  );
                 },
               ),
               const SizedBox(height: 35),
               CustomButton(
                 title: "الطلبات السابقة",
                 onPressed: () {
-                  // التنقل إلى واجهة الطلبات السابقة
                   Navigator.push(
                     context,
                     MaterialPageRoute(
