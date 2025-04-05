@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:map/screens/PreviousRequestsScreen.dart';
 import 'package:map/screens/class_screen.dart';
+import 'package:map/widgets/teacher_custom_drawer.dart';
 import 'alert_screen.dart'; // استيراد صفحة AlertScreen
 
 class StudyStageScreen extends StatefulWidget {
   final Duration exitDuration; // المدة المحددة
-
   StudyStageScreen({required this.exitDuration});
 
   @override
@@ -17,6 +17,11 @@ class _StudyStageScreenState extends State<StudyStageScreen>
     with WidgetsBindingObserver {
   DateTime? exitTime; // وقت انتهاء الطلب
   bool isTimerFinished = false; // لتحديد ما إذا انتهى المؤقت أم لا
+  bool isTimerRunning = false; // لمنع تشغيل المؤقت أكثر من مرة
+  bool isAlertShown = false; // لمنع عرض التنبيه أكثر من مرة
+
+  // إضافة GlobalKey لفتح وإغلاق القائمة الجانبية
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -36,58 +41,70 @@ class _StudyStageScreenState extends State<StudyStageScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // عندما يعود المستخدم إلى التطبيق، تحقق من الوقت المتبقي
-      if (exitTime != null && DateTime.now().isAfter(exitTime!)) {
+      if (exitTime != null &&
+          DateTime.now().isAfter(exitTime!) &&
+          !isAlertShown) {
         setState(() {
           isTimerFinished = true;
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AlertScreen()),
-        );
+        showAlertDialog();
       }
     }
   }
 
   void startTimer() {
-    if (exitTime != null) {
+    if (exitTime != null && !isTimerRunning) {
       Duration remainingTime = exitTime!.difference(DateTime.now());
       if (remainingTime > Duration.zero) {
         print("المؤقت بدأ. الوقت المتبقي: ${remainingTime.inSeconds} ثانية");
+        isTimerRunning = true; // تعطيل تشغيل المؤقت مرة أخرى
         Timer(remainingTime, () {
           print("المؤقت انتهى!");
           setState(() {
             isTimerFinished = true;
           });
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AlertScreen()),
-          );
+          showAlertDialog();
         });
       } else {
         print("الوقت قد انتهى بالفعل.");
         setState(() {
           isTimerFinished = true;
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AlertScreen()),
-        );
+        showAlertDialog();
       }
+    }
+  }
+
+  void showAlertDialog() {
+    if (!isAlertShown) {
+      isAlertShown = true; // تعطيل عرض التنبيه مرة أخرى
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AlertScreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // إضافة المفتاح للتحكم في القائمة الجانبية
       appBar: AppBar(
         backgroundColor: Colors.green,
         title: Text("المعلمين", style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false, // إزالة زر الرجوع
+        actions: [
+          IconButton(
+            icon: Icon(Icons.menu, color: Colors.white), // أيقونة القائمة
+            onPressed: () {
+              _scaffoldKey.currentState
+                  ?.openEndDrawer(); // فتح القائمة الجانبية
+            },
+          ),
+        ],
       ),
+      endDrawer: TeacherCustomDrawer(), // استخدام ملف TeacherCustomDrawer
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,7 +158,6 @@ class _StudyStageScreenState extends State<StudyStageScreen>
 class CustomButton extends StatelessWidget {
   final String title;
   final VoidCallback? onPressed;
-
   const CustomButton({required this.title, this.onPressed});
 
   @override

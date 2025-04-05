@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/screens/admin_screen.dart';
-import 'package:map/screens/teacher_screen.dart';
-import 'package:map/screens/home_screen.dart'; // استيراد شاشة HomeScreen
+import 'package:map/screens/parent_screen.dart';
+import 'children_screen.dart'; // استيراد شاشة التابعين
 
-class LoginEmployeeScreen extends StatefulWidget {
-  const LoginEmployeeScreen({Key? key}) : super(key: key);
+class LoginParentScreen extends StatefulWidget {
+  const LoginParentScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginEmployeeScreenState createState() => _LoginEmployeeScreenState();
+  _LoginParentScreenState createState() => _LoginParentScreenState();
 }
 
-class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
+class _LoginParentScreenState extends State<LoginParentScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -30,27 +29,17 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         return;
       }
 
-      // البحث في مجموعة الإداريين
-      var adminQuery =
+      // البحث في مجموعة أولياء الأمور
+      var parentQuery =
           await FirebaseFirestore.instance
-              .collection('admins')
+              .collection('parents')
               .where('id', isEqualTo: id)
               .limit(1)
               .get();
 
-      // البحث في مجموعة المعلمين إذا لم يكن إداريًا
-      var teacherQuery =
-          await FirebaseFirestore.instance
-              .collection('teachers')
-              .where('id', isEqualTo: id)
-              .limit(1)
-              .get();
-
-      // التحقق من وجود الحساب في أي من المجموعتين
-      if (adminQuery.docs.isNotEmpty) {
-        _validateAndNavigate(adminQuery.docs.first, password, "admin");
-      } else if (teacherQuery.docs.isNotEmpty) {
-        _validateAndNavigate(teacherQuery.docs.first, password, "teacher");
+      // التحقق من وجود الحساب في مجموعة أولياء الأمور
+      if (parentQuery.docs.isNotEmpty) {
+        _validateAndNavigate(parentQuery.docs.first, password);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -69,11 +58,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
     }
   }
 
-  void _validateAndNavigate(
-    DocumentSnapshot userDoc,
-    String password,
-    String role,
-  ) {
+  void _validateAndNavigate(DocumentSnapshot userDoc, String password) {
     var userData = userDoc.data() as Map<String, dynamic>;
     String storedPassword = userData['password'];
 
@@ -95,20 +80,15 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
       ),
     );
 
-    Widget nextScreen;
-    if (role == "admin") {
-      nextScreen = AdminScreen();
-    } else {
-      // افترض أن هناك مدة محددة في بيانات المستخدم
-      int exitMinutes = userData['exitDuration'] ?? 10; // افتراضياً 10 دقائق
-      nextScreen = StudyStageScreen(
-        exitDuration: Duration(minutes: exitMinutes),
-      );
-    }
+    // الحصول على معرف ولي الأمر
+    String guardianId = userData['id'];
 
+    // تحويل إلى صفحة التابعين مع تمرير guardianId
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => nextScreen),
+      MaterialPageRoute(
+        builder: (context) => GuardianScreen(guardianId: guardianId),
+      ),
     );
   }
 
@@ -120,7 +100,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         backgroundColor: Colors.green,
         elevation: 0,
         title: const Text(
-          "تسجيل دخول الموظفين",
+          "تسجيل دخول ولي الأمر",
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -131,11 +111,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // العودة إلى HomeScreen
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
+            Navigator.pop(context);
           },
         ),
       ),
@@ -149,7 +125,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
               height: 180,
             ),
             const SizedBox(height: 30),
-            _buildInputField(_idController, 'رقم الموظف', Icons.person),
+            _buildInputField(_idController, 'رقم ولي الأمر', Icons.person),
             const SizedBox(height: 10),
             _buildInputField(
               _passwordController,

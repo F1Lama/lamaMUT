@@ -1,4 +1,3 @@
-// select_class_screen.dart
 import 'package:flutter/material.dart';
 import 'students_list_screen.dart'; // استيراد صفحة عرض الطلاب
 
@@ -24,91 +23,32 @@ class SelectClassScreen extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomButtonAuth(
-              title: '1',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '1'),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 30),
-            CustomButtonAuth(
-              title: '2',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '2'),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 30),
-            CustomButtonAuth(
-              title: '3',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '3'),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 30),
-            CustomButtonAuth(
-              title: '4',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '4'),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 30),
-            CustomButtonAuth(
-              title: '5',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '5'),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 30),
-            CustomButtonAuth(
-              title: '6',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            StudentsListScreen(stage: stage, schoolClass: '6'),
-                  ),
-                );
-              },
-            ),
-          ],
+          children: List.generate(6, (index) {
+            final classNumber = index + 1; // أرقام الفصول من 1 إلى 6
+            final buttonText =
+                '$stage/$classNumber'; // النص المطلوب (مثل "أولى ثانوي/1")
+            return Column(
+              children: [
+                CustomButtonAuth(
+                  title: buttonText,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => StudentsListScreen(
+                              stage: stage,
+                              schoolClass:
+                                  '$classNumber', // تمرير رقم الفصل فقط للصفحة التالية
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 30), // المسافة بين الأزرار
+              ],
+            );
+          }),
         ),
       ),
     );

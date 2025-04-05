@@ -127,17 +127,8 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                     );
                     return;
                   }
-                  // التحقق من أن المستخدم غير المدة عند اختيار "أخرى"
-                  if (isOtherSelected &&
-                      selectedDuration == Duration(minutes: 3)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("حدد مدة مختلفة من القائمة"),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
+
+                  // لا حاجة للتحقق من المدة عند اختيار "أخرى" لأن 3 دقائق الآن مقبولة
                   // حساب وقت الخروج بناءً على الوقت الحالي والمدة المحددة
                   DateTime now = DateTime.now();
                   DateTime exitTime = now.add(selectedDuration);

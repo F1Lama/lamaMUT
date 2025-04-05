@@ -1,13 +1,14 @@
+// lib/widgets/guardian_custom_drawer.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:map/screens/home_screen.dart';
-//import 'package:map/screens/login_screen.dart'; // استيراد صفحة تسجيل الدخول
+import 'package:map/screens/home_screen.dart'; // استيراد صفحة البداية (Home Screen)
 
-class TeacherCustomDrawer extends StatelessWidget {
+class GuardianCustomDrawer extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
-      // توجيه إلى صفحة تسجيل الدخول باستخدام MaterialPageRoute
+      // توجيه إلى صفحة البداية (Home Screen) باستخدام MaterialPageRoute
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

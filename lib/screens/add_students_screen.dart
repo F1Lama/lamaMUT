@@ -41,12 +41,15 @@ class AddStudentsScreen extends StatelessWidget {
             if (fileData != null) {
               try {
                 for (var row in fileData) {
-                  if (row.isNotEmpty && row.length >= 4) {
+                  if (row.isNotEmpty && row.length >= 5) {
+                    // تم تحديث الشرط ليشمل العمود الخامس
                     // قراءة البيانات من الصف وتنسيقها
                     final studentId = row[0].trim();
                     final studentName = row[1].trim();
                     final schoolClass = row[2].trim();
                     final stage = row[3].trim();
+                    final guardianId =
+                        row[4].trim(); // إضافة خانة رقم ولي الأمر
 
                     // تحويل المرحلة إلى اللغة الإنجليزية
                     final formattedStage =
@@ -66,6 +69,12 @@ class AddStudentsScreen extends StatelessWidget {
                       continue;
                     }
 
+                    // التحقق من صحة رقم ولي الأمر
+                    if (guardianId.isEmpty) {
+                      print("رقم ولي الأمر غير صالح: $guardianId");
+                      continue;
+                    }
+
                     // إضافة الطالب إلى Firestore
                     await firestore
                         .collection('stages') // المجموعة الرئيسية
@@ -77,10 +86,11 @@ class AddStudentsScreen extends StatelessWidget {
                           'name': studentName,
                           'schoolClass': schoolClass,
                           'stage': formattedStage,
+                          'guardianId': guardianId, // إضافة رقم ولي الأمر
                         });
 
                     print(
-                      "تمت إضافة الطالب: $studentName في المرحلة: $formattedStage والكلاس: $schoolClass",
+                      "تمت إضافة الطالب: $studentName في المرحلة: $formattedStage والكلاس: $schoolClass برقم ولي الأمر: $guardianId",
                     );
                   } else {
                     print("صف غير صالح: $row");

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/screens/RequestDetailsScreen.dart'; // استيراد واجهة تفاصيل الطلب
+import 'package:map/screens/RequestDetailsScreen.dart';
 
 class ExitPermitsScreen extends StatelessWidget {
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -35,7 +35,7 @@ class ExitPermitsScreen extends StatelessWidget {
         backgroundColor: Colors.green,
         title: Text(
           "تصاريح الخروج من الحصة",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -46,15 +46,12 @@ class ExitPermitsScreen extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        padding: const EdgeInsets.all(16.0),
         child: StreamBuilder<QuerySnapshot>(
           stream:
               firestore
-                  .collection('requests') // جلب الطلبات من Firestore
-                  .where(
-                    'status',
-                    isEqualTo: 'active',
-                  ) // عرض الطلبات النشطة فقط
+                  .collection('requests')
+                  .where('status', isEqualTo: 'active')
                   .orderBy('exitTime', descending: true)
                   .snapshots(),
           builder: (context, snapshot) {
@@ -68,32 +65,7 @@ class ExitPermitsScreen extends StatelessWidget {
 
             final requests = snapshot.data!.docs;
 
-            // التحقق من الطلبات المنتهية وتحديث حالتها
-            for (var request in requests) {
-              final data = request.data() as Map<String, dynamic>;
-              final exitTime = (data['exitTime'] as Timestamp).toDate();
-              final currentTime = DateTime.now();
-
-              if (currentTime.isAfter(exitTime)) {
-                // تحديث الحالة إلى "expired" إذا انتهى الوقت
-                FirebaseFirestore.instance
-                    .collection('requests')
-                    .doc(request.id)
-                    .update({'status': 'expired'});
-              }
-            }
-
-            // عرض الطلبات النشطة فقط
-            final activeRequests =
-                requests
-                    .where(
-                      (request) =>
-                          (request.data() as Map<String, dynamic>)['status'] ==
-                          'active',
-                    )
-                    .toList();
-
-            if (activeRequests.isEmpty) {
+            if (requests.isEmpty) {
               return Center(
                 child: Text(
                   "لا توجد تصاريح حتى الآن.",
@@ -103,53 +75,61 @@ class ExitPermitsScreen extends StatelessWidget {
             }
 
             return ListView.builder(
-              itemCount: activeRequests.length,
+              itemCount: requests.length,
               itemBuilder: (context, index) {
-                final request = activeRequests[index];
+                final request = requests[index];
                 final data = request.data() as Map<String, dynamic>;
-                try {
-                  final exitTime = (data['exitTime'] as Timestamp).toDate();
+                final exitTime = (data['exitTime'] as Timestamp).toDate();
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => RequestDetailsScreen(
-                                studentName: data['studentName'],
-                                grade: data['grade'],
-                                teacherName: data['teacherName'],
-                                exitTime: exitTime.toString(),
-                              ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      height: 100,
-                      margin: EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => RequestDetailsScreen(
+                              studentName: data['studentName'],
+                              grade: data['grade'],
+                              teacherName: data['teacherName'],
+                              exitTime: exitTime.toString(),
+                            ),
                       ),
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(5),
-                      child: Text(
-                        data['studentName'],
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.only(bottom: 12),
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  );
-                } catch (e) {
-                  return ListTile(
-                    title: Text("خطأ في عرض الطلب: ${e.toString()}"),
-                  );
-                }
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "الطالبة: ${data['studentName']}",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "الصف: ${data['grade']}",
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          "المعلمة: ${data['teacherName']}",
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          "وقت الخروج: ${exitTime.hour}:${exitTime.minute}",
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
             );
           },

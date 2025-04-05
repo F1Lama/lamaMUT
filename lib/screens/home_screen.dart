@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import 'login_employee_screen.dart'; // استيراد شاشة الموظفين
-import 'package:map/screens/login_screen.dart';
+//import 'login_school_screen.dart'; // استيراد شاشة المدرسة
+import 'login_parent_screen.dart'; // استيراد شاشة أولياء الأمور
+import 'registerr_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,9 +32,7 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginSchoolScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
                   );
                 },
               ),
@@ -54,7 +54,12 @@ class HomeScreen extends StatelessWidget {
               CustomButton(
                 title: "ولي أمر الطالب",
                 onPressed: () {
-                  print("تم الضغط على ولي أمر الطالب");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginParentScreen(),
+                    ),
+                  );
                 },
               ),
             ],
