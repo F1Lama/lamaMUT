@@ -73,26 +73,36 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildDateSelector(
-                  "من",
-                  fromDate,
-                  () => _selectDate(context, true),
+                Expanded(
+                  child: _buildDateSelector(
+                    "من",
+                    fromDate,
+                    () => _selectDate(context, true),
+                  ),
                 ),
                 SizedBox(width: 10),
-                _buildDateSelector(
-                  "إلى",
-                  toDate,
-                  () => _selectDate(context, false),
+                Expanded(
+                  child: _buildDateSelector(
+                    "إلى",
+                    toDate,
+                    () => _selectDate(context, false),
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _applyFilter,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: Text("تصفية", style: TextStyle(color: Colors.white)),
+            Align(
+              alignment: Alignment.center,
+              child: ElevatedButton.icon(
+                onPressed: _applyFilter,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                ),
+                icon: Icon(Icons.filter_alt, color: Colors.white),
+                label: Text("تصفية", style: TextStyle(color: Colors.white)),
+              ),
             ),
             SizedBox(height: 20),
             Expanded(
@@ -132,17 +142,19 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
   }
 
   Widget _buildDateSelector(String label, DateTime? date, VoidCallback onTap) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        height: 50,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(10),
         ),
+        alignment: Alignment.center,
         child: Text(
           date != null ? DateFormat('yyyy-MM-dd').format(date) : label,
-          style: TextStyle(fontSize: 16, color: Colors.black),
+          style: TextStyle(fontSize: 16, color: Colors.black87),
         ),
       ),
     );
@@ -153,25 +165,30 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
     final grade = data['grade'] ?? 'غير معروف';
     final exitTime =
         (data['exitTime'] as Timestamp?)?.toDate() ?? DateTime.now();
-    final formattedExitTime = DateFormat('yyyy-MM-dd HH:mm').format(exitTime);
+    final formattedExitTime = DateFormat('yyyy-MM-dd – HH:mm').format(exitTime);
 
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("الطالب: $studentName", style: TextStyle(fontSize: 16)),
-          Text("الصف: $grade", style: TextStyle(fontSize: 16)),
-          Text(
-            "وقت الخروج: $formattedExitTime",
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "الطالب: $studentName",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text("الصف: $grade", style: TextStyle(fontSize: 15)),
+            SizedBox(height: 4),
+            Text(
+              "وقت الخروج: $formattedExitTime",
+              style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+            ),
+          ],
+        ),
       ),
     );
   }

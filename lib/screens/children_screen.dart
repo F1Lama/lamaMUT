@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:map/screens/authorization_screen.dart';
+import 'package:map/screens/call_screen.dart';
+import 'package:map/screens/gardian_attendance_screen.dart';
+import 'request_permission_screen.dart'; // صفحة طلب الاستئذان
 
 class ChildrenScreen extends StatefulWidget {
   final String guardianId; // معرف ولي الأمر المسجل
+  final String
+  serviceType; // نوع الخدمة المختارة (مثل "الحضور" أو "طلب الاستئذان")
 
-  const ChildrenScreen({Key? key, required this.guardianId}) : super(key: key);
+  const ChildrenScreen({
+    Key? key,
+    required this.guardianId,
+    required this.serviceType,
+  }) : super(key: key);
 
   @override
   _ChildrenScreenState createState() => _ChildrenScreenState();
@@ -61,6 +71,77 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
     setState(() {
       students[index]["isChecked"] = !students[index]["isChecked"];
     });
+  }
+
+  // دالة للتوجيه إلى الصفحة الصحيحة بناءً على الخدمة
+  void _navigateToServiceScreen(List<Map<String, dynamic>> students) {
+    // تحديد الطلاب المحددين (checkbox مفعلة)
+    final selectedStudents =
+        students.where((student) => student["isChecked"]).toList();
+
+    if (selectedStudents.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("يرجى اختيار طالب واحد على الأقل")),
+      );
+      return;
+    }
+
+    // فتح الصفحة المخصصة بناءً على نوع الخدمة
+    switch (widget.serviceType) {
+      case "attendance": // إذا كانت الخدمة هي "الحضور"
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => AttendanceScreen(
+                  studentId: selectedStudents.first["id"], // تمرير معرف الطالب
+                  guardianId: widget.guardianId, // تمرير معرف ولي الأمر
+                ),
+          ),
+        );
+        break;
+
+      case "permission": // إذا كانت الخدمة هي "طلب الاستئذان"
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => RequestPermissionScreen(
+                  studentId: selectedStudents.first["id"],
+                  studentName: selectedStudents.first["name"], // اسم الطالب
+                ),
+          ),
+        );
+        break;
+
+      case "delegation": // إذا كانت الخدمة هي "التوكيل"
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => AuthorizationScreen(
+                  studentId: selectedStudents.first["id"],
+                ),
+          ),
+        );
+        break;
+
+      case "call_request": // إذا كانت الخدمة هي "طلب النداء"
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => RequestHelpScreen(
+                  studentId: selectedStudents.first["id"],
+                  studentName: selectedStudents.first["name"], // اسم الطالب
+                ),
+          ),
+        );
+        break;
+
+      default:
+        print("خدمة غير معروفة");
+    }
   }
 
   @override
@@ -127,15 +208,23 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                                 onChanged: (value) {
                                   _toggleCheck(index, students);
                                 },
+                                activeColor: Color.fromARGB(
+                                  255,
+                                  1,
+                                  113,
+                                  189,
+                                ), // تعديل هنا للون الأزرق
                               ),
                               const SizedBox(width: 10),
-                              Text(
-                                students[index]["name"],
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Text(
+                                  students[index]["name"],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.right,
                                 ),
-                                textAlign: TextAlign.right,
                               ),
                             ],
                           ),
@@ -148,7 +237,7 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              width: 150,
+              width: double.infinity, // عرض كامل
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -158,7 +247,10 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                   ),
                 ),
                 onPressed: () {
-                  print("تم الضغط على التالي");
+                  // الحصول على بيانات الطلاب من الـ FutureBuilder
+                  _studentsFuture.then((students) {
+                    _navigateToServiceScreen(students);
+                  });
                 },
                 child: const Text(
                   "التالي",

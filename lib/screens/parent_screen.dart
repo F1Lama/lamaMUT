@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/screens/PreviousRequestsScreen.dart';
 import 'package:map/widgets/guardian_custom_drawer.dart'; // استيراد القائمة الجانبية
 import 'package:map/screens/children_screen.dart';
 import 'package:map/screens/request_permission_screen.dart';
@@ -56,7 +57,9 @@ class GuardianScreen extends StatelessWidget {
                     builder:
                         (context) => ChildrenScreen(
                           guardianId: guardianId,
-                        ), // تمرير guardianId
+                          serviceType:
+                              "attendance", // تحديد نوع الخدمة (الحضور)
+                        ),
                   ),
                 );
               },
@@ -69,7 +72,11 @@ class GuardianScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) => ChildrenScreen(guardianId: guardianId),
+                        (context) => ChildrenScreen(
+                          guardianId: guardianId,
+                          serviceType:
+                              "permission", // تحديد نوع الخدمة (طلب الاستئذان)
+                        ),
                   ),
                 );
               },
@@ -82,7 +89,11 @@ class GuardianScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) => ChildrenScreen(guardianId: guardianId),
+                        (context) => ChildrenScreen(
+                          guardianId: guardianId,
+                          serviceType:
+                              "call_request", // تحديد نوع الخدمة (طلب النداء)
+                        ),
                   ),
                 );
               },
@@ -94,7 +105,12 @@ class GuardianScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AuthorizationScreen(),
+                    builder:
+                        (context) => ChildrenScreen(
+                          guardianId: guardianId,
+                          serviceType:
+                              "delegation", // تحديد نوع الخدمة (طلب النداء)
+                        ),
                   ),
                 );
               },
@@ -103,7 +119,12 @@ class GuardianScreen extends StatelessWidget {
             CustomButton(
               title: "الطلبات السابقة",
               onPressed: () {
-                print("تم الضغط على الطلبات السابقة");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PreviousRequestsScreen(),
+                  ),
+                );
               },
             ),
           ],

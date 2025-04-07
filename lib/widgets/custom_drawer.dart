@@ -14,6 +14,7 @@ import 'package:map/screens/add_parents_screen.dart';
 import 'package:map/screens/add_students_screen.dart';
 import 'package:map/screens/add_teachers_screen.dart';
 import 'package:map/screens/login_screen.dart';
+import 'package:map/screens/home_screen.dart'; // إضافة استيراد HomeScreen
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -146,12 +147,18 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   void _logout(BuildContext context) async {
     try {
+      // تسجيل الخروج من Firebase
       await FirebaseAuth.instance.signOut();
+
+      // التنقل إلى صفحة HomeScreen وإزالة جميع الصفحات السابقة من المكدس
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginEmployeeScreen()),
-        (Route<dynamic> route) => false,
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ), // تحديث الصفحة هنا
+        (Route<dynamic> route) => false, // إزالة جميع الصفحات السابقة
       );
     } catch (e) {
+      // عرض رسالة خطأ في حال فشل تسجيل الخروج
       print("❌ خطأ في تسجيل الخروج: $e");
       ScaffoldMessenger.of(
         context,

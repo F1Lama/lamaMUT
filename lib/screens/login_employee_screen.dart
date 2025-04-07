@@ -54,7 +54,7 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("الحساب غير موجود"),
+            content: Text("الحساب غير مسجل"),
             backgroundColor: Colors.red,
           ),
         );

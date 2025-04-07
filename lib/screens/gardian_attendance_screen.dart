@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // لاستخدام Firestore
+import 'package:map/screens/excuse_upload_screen.dart';
 
 class AttendanceScreen extends StatelessWidget {
+  final String studentId;
+  final String guardianId; // إضافة معلمة guardianId
+
+  AttendanceScreen({
+    super.key,
+    required this.studentId,
+    required this.guardianId, // إضافة guardianId كمعلمة إجبارية
+  });
+
   final List<Map<String, dynamic>> attendanceRecords = [
     {"day": "الأحد", "date": "٣/١", "status": "حاضر", "color": Colors.green},
     {
@@ -27,6 +38,37 @@ class AttendanceScreen extends StatelessWidget {
       "color": Colors.green,
     },
   ];
+
+  Future<Map<String, dynamic>?> _fetchStudentData(String studentId) async {
+    try {
+      // البحث عن الطالب في جميع المراحل والفصول
+      final stages = ['first', 'second', 'third'];
+      for (var stage in stages) {
+        final classes = ['1', '2', '3', '4', '5', '6'];
+        for (var schoolClass in classes) {
+          final snapshot =
+              await FirebaseFirestore.instance
+                  .collection('stages')
+                  .doc(stage)
+                  .collection(schoolClass)
+                  .doc(studentId)
+                  .get();
+
+          if (snapshot.exists) {
+            return {
+              "name": snapshot['name'],
+              "schoolClass": "$schoolClass/$stage", // الصف الدراسي
+            };
+          }
+        }
+      }
+      print("Student not found with ID: $studentId");
+      return null;
+    } catch (e) {
+      print("Error fetching student data: $e");
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,28 +98,48 @@ class AttendanceScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  Text(
-                    "معلومات الطالبة: مريم خالد",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "الصف: ١/٢",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _fetchStudentData(studentId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(
+                    child: Text("حدث خطأ أثناء جلب البيانات"),
+                  );
+                } else {
+                  final studentData = snapshot.data!;
+                  return Container(
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "معلومات الطالب: ${studentData['name']}", // عرض اسم الطالب
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          "الصف: ${studentData['schoolClass']}", // عرض الصف الدراسي
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
             ),
             const SizedBox(height: 20),
             Container(
@@ -110,39 +172,57 @@ class AttendanceScreen extends StatelessWidget {
                   const Divider(thickness: 1),
                   Column(
                     children:
-                        attendanceRecords
-                            .map(
-                              (record) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 5,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.circle,
-                                          color: record["color"],
-                                          size: 16,
+                        attendanceRecords.map((record) {
+                          return InkWell(
+                            onTap:
+                                record["status"] == "غائب" ||
+                                        record["status"] == "متأخر"
+                                    ? () {
+                                      // التنقل إلى صفحة ExcuseUploadScreen مع تمرير guardianId
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => ExcuseUploadScreen(
+                                                day: record["day"],
+                                                date: record["date"],
+                                                status: record["status"],
+                                                guardianId:
+                                                    guardianId, // تمرير guardianId
+                                              ),
                                         ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          record["status"],
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      "${record["day"]} ${record["date"]}",
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
+                                      );
+                                    }
+                                    : null,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.circle,
+                                        color: record["color"],
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        record["status"],
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    "${record["day"]} ${record["date"]}",
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
                               ),
-                            )
-                            .toList(),
+                            ),
+                          );
+                        }).toList(),
                   ),
                 ],
               ),

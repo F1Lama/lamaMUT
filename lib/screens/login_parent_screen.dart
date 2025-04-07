@@ -29,7 +29,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
         return;
       }
 
-      // البحث في مجموعة أولياء الأمور
+      // البحث في مجموعة أولياء الأمور (parents)
       var parentQuery =
           await FirebaseFirestore.instance
               .collection('parents')
@@ -37,9 +37,19 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
               .limit(1)
               .get();
 
-      // التحقق من وجود الحساب في مجموعة أولياء الأمور
+      // البحث في مجموعة التفويضات (Authorizations)
+      var authorizationQuery =
+          await FirebaseFirestore.instance
+              .collection('Authorizations')
+              .where('id', isEqualTo: id)
+              .limit(1)
+              .get();
+
+      // التحقق من وجود الحساب في أي من المجموعتين
       if (parentQuery.docs.isNotEmpty) {
         _validateAndNavigate(parentQuery.docs.first, password);
+      } else if (authorizationQuery.docs.isNotEmpty) {
+        _validateAndNavigate(authorizationQuery.docs.first, password);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -50,8 +60,8 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("حدث خطأ أثناء تسجيل الدخول"),
+        SnackBar(
+          content: Text("حدث خطأ أثناء تسجيل الدخول: $e"),
           backgroundColor: Colors.red,
         ),
       );
@@ -80,7 +90,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
       ),
     );
 
-    // الحصول على معرف ولي الأمر
+    // الحصول على معرف ولي الأمر أو الموكل
     String guardianId = userData['id'];
 
     // تحويل إلى صفحة التابعين مع تمرير guardianId
