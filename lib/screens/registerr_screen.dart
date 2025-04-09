@@ -19,6 +19,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   bool _isLoading = false;
 
+  // إضافة متغير لتخزين المرحلة المختارة
+  String? selectedStage;
+  final List<String> schoolStages = ['ابتدائي', 'متوسط', 'ثانوي'];
+
   Future<void> registerSchool() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -27,16 +31,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final schoolLocation = schoolLocationController.text.trim();
 
     // التحقق من البيانات المدخلة
+    if (selectedStage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى اختيار مرحلة المدرسة')),
+      );
+      return;
+    }
+
     if (schoolName.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('يرجى إدخال اسم المدرسة')));
       return;
     }
+
     if (schoolLocation.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('يرجى إدخال موقع المدرسة')));
+      return;
+    }
+
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى إدخال بريد إلكتروني صالح')),
+      );
       return;
     }
 
@@ -62,13 +81,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى إدخال بريد إلكتروني صالح')),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true; // بدء مؤشر التحميل
     });
@@ -86,6 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'schoolName': schoolName,
             'schoolLocation': schoolLocation,
             'email': email,
+            'stage': selectedStage, // إضافة المرحلة المختارة
             'createdAt': DateTime.now(),
           });
 
@@ -141,6 +154,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 30),
+
+              // قائمة مراحل المدرسة
+              _buildDropdownField(
+                label: 'مرحلة المدرسة',
+                icon: Icons.class_,
+                value: selectedStage,
+                items: schoolStages,
+                onChanged: (value) {
+                  setState(() {
+                    selectedStage = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 15),
+
               // حقل اسم المدرسة
               _buildInputField(
                 schoolNameController,
@@ -149,6 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 helperText: 'يجب أن يكون اسم المدرسة نصًا صالحًا',
               ),
               const SizedBox(height: 15),
+
               // حقل موقع المدرسة
               _buildInputField(
                 schoolLocationController,
@@ -157,6 +186,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 helperText: 'يجب أن يكون الموقع نصًا صالحًا',
               ),
               const SizedBox(height: 15),
+
+              // حقل البريد الإلكتروني
+              _buildInputField(
+                emailController,
+                'البريد الإلكتروني',
+                Icons.email,
+                helperText: 'مثال: example@example.com',
+              ),
+              const SizedBox(height: 15),
+
               // حقل كلمة المرور
               _buildInputField(
                 passwordController,
@@ -166,6 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 helperText: 'يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز',
               ),
               const SizedBox(height: 15),
+
               // حقل تأكيد كلمة المرور
               _buildInputField(
                 confirmPasswordController,
@@ -174,15 +214,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: true,
                 helperText: 'يجب أن تكون مطابقة لكلمة المرور',
               ),
-              const SizedBox(height: 15),
-              // حقل البريد الإلكتروني
-              _buildInputField(
-                emailController,
-                'البريد الإلكتروني',
-                Icons.email,
-                helperText: 'مثال: example@example.com',
-              ),
               const SizedBox(height: 30),
+
               // زر تسجيل
               _buildActionButton('تسجيل', registerSchool),
             ],
@@ -218,7 +251,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // دالة لتصميم الأزرار
+  // دالة لتصميم الزر
   Widget _buildActionButton(String label, VoidCallback onPressed) {
     return SizedBox(
       width: double.infinity,
@@ -241,6 +274,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: const TextStyle(fontSize: 18, color: Colors.white),
                 ),
       ),
+    );
+  }
+
+  // دالة لتصميم القائمة المنسدلة
+  Widget _buildDropdownField({
+    required String label,
+    required IconData icon,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: const Color.fromARGB(255, 1, 113, 189)),
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey[300],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      items:
+          items.map((String item) {
+            return DropdownMenuItem<String>(value: item, child: Text(item));
+          }).toList(),
+      onChanged: onChanged,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'يرجى اختيار مرحلة المدرسة';
+        }
+        return null;
+      },
     );
   }
 }

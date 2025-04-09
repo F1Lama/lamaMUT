@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart'; // استيراد Firebase Core
 import 'package:flutter/material.dart';
+import 'package:map/screens/change_location_screen.dart';
 import 'firebase_options.dart'; // استيراد ملف التكوين
 import 'package:map/screens/add_admin_screen.dart';
 import 'package:map/screens/modifyAdminScreen.dart';
@@ -34,8 +35,9 @@ class MyApp extends StatelessWidget {
         //'/logout': (context) => LogoutScreen(), // شاشة تسجيل الخروج
         '/AddAdminScreen': (context) => AddAdminScreen(), // شاشة إضافة مشرف
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
-
         // '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
+        '/ChangeLocationScreen':
+            (context) => ChangeLocationScreen(), // إضافة المسار هنا
       },
     );
   }

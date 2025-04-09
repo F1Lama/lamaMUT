@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart'; // العجلة
 
 class RequestPermissionScreen extends StatefulWidget {
   final String studentId;
@@ -22,8 +20,7 @@ class RequestPermissionScreen extends StatefulWidget {
 class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
   final TextEditingController reasonController = TextEditingController();
   DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-  PlatformFile? pickedFile;
+  TimeOfDay? selectedTime; // الوقت المحدد
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +44,12 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 50),
-
               CustomLabel(text: 'السبب'),
               CustomTextField(
                 controller: reasonController,
                 hintText: 'اكتب السبب هنا',
               ),
-              CustomLabel(text: 'التاريخ/اليوم'),
+              CustomLabel(text: 'التاريخ'),
               InkWell(
                 onTap: () async {
                   final DateTime? pickedDate = await showDatePicker(
@@ -81,26 +77,28 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                 ),
               ),
               CustomLabel(text: 'الوقت'),
-              const SizedBox(height: 10),
-              Center(
-                child: TimePickerSpinner(
-                  is24HourMode: false,
-                  normalTextStyle: TextStyle(fontSize: 18, color: Colors.grey),
-                  highlightedTextStyle: TextStyle(
-                    fontSize: 22,
-                    color: Colors.black,
-                  ),
-                  spacing: 40,
-                  itemHeight: 60,
-                  isForce2Digits: true,
-                  onTimeChange: (time) {
+              InkWell(
+                onTap: () async {
+                  final TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (pickedTime != null) {
                     setState(() {
-                      selectedTime = TimeOfDay(
-                        hour: time.hour,
-                        minute: time.minute,
-                      );
+                      selectedTime = pickedTime;
                     });
-                  },
+                  }
+                },
+                child: AbsorbPointer(
+                  child: CustomTextField(
+                    controller: TextEditingController(
+                      text:
+                          selectedTime != null
+                              ? _formatTime(selectedTime!)
+                              : 'اختر الوقت',
+                    ),
+                    hintText: 'اختر الوقت',
+                  ),
                 ),
               ),
               if (selectedTime != null)
@@ -116,31 +114,6 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 20),
-              CustomLabel(text: 'إرفاق الملف'),
-              InkWell(
-                onTap: () async {
-                  FilePickerResult? result = await FilePicker.platform
-                      .pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf'],
-                      );
-
-                  if (result != null) {
-                    setState(() {
-                      pickedFile = result.files.first;
-                    });
-                  }
-                },
-                child: AbsorbPointer(
-                  child: CustomTextField(
-                    controller: TextEditingController(
-                      text: pickedFile?.name ?? '',
-                    ),
-                    hintText: 'اضغط لاختيار ملف PDF',
-                  ),
-                ),
-              ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -149,18 +122,10 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                   onPressed: () async {
                     if (_validateFields()) {
                       try {
-                        final storageRef = FirebaseStorage.instance.ref().child(
-                          'excuses/${pickedFile!.name}',
-                        );
-                        final uploadTask = storageRef.putData(
-                          pickedFile!.bytes!,
-                        );
-                        final snapshot = await uploadTask.whenComplete(() {});
-                        final fileUrl = await snapshot.ref.getDownloadURL();
-
                         await FirebaseFirestore.instance.collection('excuses').add({
                           'studentId': widget.studentId,
                           'studentName': widget.studentName,
+                          'schoolClass': '', // <-- هذا السطر هو اللي نحتاجه
                           'reason': reasonController.text,
                           'date':
                               selectedDate != null
@@ -168,16 +133,14 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                                   : '',
                           'time':
                               selectedTime != null
-                                  ? "${_formatTime(selectedTime!)}"
+                                  ? _formatTime(selectedTime!)
                                   : '',
-                          'fileUrl': fileUrl,
                           'timestamp': DateTime.now(),
                         });
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('تم إرسال الطلب بنجاح')),
                         );
-
                         _clearFields();
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -205,17 +168,10 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
   bool _validateFields() {
     if (reasonController.text.isEmpty ||
         selectedDate == null ||
-        selectedTime == null ||
-        pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('يرجى ملء جميع الحقول واختيار ملف PDF')),
-      );
-      return false;
-    }
-    if (pickedFile!.extension?.toLowerCase() != 'pdf') {
+        selectedTime == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('يرجى اختيار ملف من نوع PDF')));
+      ).showSnackBar(SnackBar(content: Text('يرجى ملء جميع الحقول')));
       return false;
     }
     return true;
@@ -226,7 +182,6 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
     setState(() {
       selectedDate = null;
       selectedTime = null;
-      pickedFile = null;
     });
   }
 }

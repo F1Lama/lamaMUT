@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button_auth.dart';
+import 'change_location_screen.dart'; // استيراد ChangeLocationScreen
 
 class SchoolScreen extends StatelessWidget {
   final String schoolName; // إضافة المتغير لتخزين اسم المدرسة
@@ -86,7 +87,7 @@ class SchoolScreen extends StatelessWidget {
                   CustomButtonAuth(
                     title: "تغيير موقع المدرسة",
                     onPressed: () {
-                      Navigator.pushNamed(context, '/school');
+                      Navigator.pushNamed(context, '/ChangeLocationScreen');
                     },
                   ),
                 ],

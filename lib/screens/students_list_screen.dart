@@ -17,6 +17,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
   Map<String, bool> students = {};
   String? teacherName; // اسم المعلمة
   bool isLoading = true; // حالة التحميل
+  String? selectedStudent; // الطالب المحدد
 
   // خريطة لتحويل الأسماء العربية إلى الإنجليزية
   final Map<String, String> stageMap = {
@@ -137,35 +138,20 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                                           textAlign: TextAlign.right,
                                         ),
                                         value: students[key],
-                                        onChanged: (bool? value) async {
-                                          if (value == true) {
-                                            // عند تحديد اسم الطالب، انتقل إلى صفحة تحديد الوقت
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (
-                                                      context,
-                                                    ) => TimeSelectionScreen(
-                                                      studentName: key,
-                                                      grade:
-                                                          "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
-                                                      teacherName:
-                                                          teacherName ??
-                                                          "غير محدد", // اسم المعلمة
-                                                    ),
-                                              ),
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            // إعادة تعيين جميع الخيارات
+                                            students.updateAll(
+                                              (key, _) => false,
                                             );
-
-                                            // إعادة تعيين حالة الـ Checkbox بعد العودة
-                                            setState(() {
-                                              students[key] = false;
-                                            });
-                                          } else {
-                                            setState(() {
-                                              students[key] = value!;
-                                            });
-                                          }
+                                            // تحديد الطالب الجديد
+                                            students[key] = value!;
+                                            // تخزين اسم الطالب المحدد
+                                            selectedStudent =
+                                                students[key] == true
+                                                    ? key
+                                                    : null;
+                                          });
                                         },
                                         controlAffinity:
                                             ListTileControlAffinity.leading,
@@ -174,9 +160,38 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                               ),
                     ),
                     MaterialButton(
-                      onPressed: () {
-                        // يمكنك إضافة وظيفة عند النقر على الزر "موافق"
-                        print("تم تحديد الطلاب: $students");
+                      onPressed: () async {
+                        // التحقق مما إذا تم اختيار طالب واحد على الأقل
+                        if (selectedStudent == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("يرجى اختيار طالب واحد على الأقل"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // الانتقال إلى صفحة تحديد الوقت
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => TimeSelectionScreen(
+                                  studentName: selectedStudent!,
+                                  grade:
+                                      "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
+                                  teacherName:
+                                      teacherName ?? "غير محدد", // اسم المعلمة
+                                ),
+                          ),
+                        );
+
+                        // إعادة تعيين الطالب المحدد بعد العودة
+                        setState(() {
+                          students[selectedStudent!] = false;
+                          selectedStudent = null;
+                        });
                       },
                       color: Color.fromARGB(255, 1, 113, 189),
                       textColor: Colors.white,

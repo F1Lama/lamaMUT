@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/screens/Permission_screen.dart';
 import 'package:map/screens/PreviousRequestsScreen.dart';
 import '../widgets/custom_button.dart'; // استيراد الزر الصحيح
 import '../widgets/custom_drawer.dart';
@@ -11,6 +12,7 @@ class AdminScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false, // إزالة زر الرجوع
         backgroundColor: Colors.green,
         elevation: 0,
         centerTitle: true,
@@ -50,7 +52,10 @@ class AdminScreen extends StatelessWidget {
               CustomButton(
                 title: "طلبات الاستئذان",
                 onPressed: () {
-                  print("تم الضغط على طلبات الاستئذان");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PermissionScreen()),
+                  );
                 },
               ),
               const SizedBox(height: 35),

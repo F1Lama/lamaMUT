@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:map/screens/parent_screen.dart';
 import 'children_screen.dart'; // استيراد شاشة التابعين
+import 'agent_screen.dart'; // استيراد شاشة الموكل
 
 class LoginParentScreen extends StatefulWidget {
   const LoginParentScreen({Key? key}) : super(key: key);
@@ -47,9 +48,9 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
 
       // التحقق من وجود الحساب في أي من المجموعتين
       if (parentQuery.docs.isNotEmpty) {
-        _validateAndNavigate(parentQuery.docs.first, password);
+        _validateAndNavigate(parentQuery.docs.first, password, isParent: true);
       } else if (authorizationQuery.docs.isNotEmpty) {
-        _validateAndNavigate(authorizationQuery.docs.first, password);
+        _validateAndNavigate(authorizationQuery.docs.first, password, isParent: false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -68,7 +69,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
     }
   }
 
-  void _validateAndNavigate(DocumentSnapshot userDoc, String password) {
+  void _validateAndNavigate(DocumentSnapshot userDoc, String password, {required bool isParent}) {
     var userData = userDoc.data() as Map<String, dynamic>;
     String storedPassword = userData['password'];
 
@@ -90,15 +91,22 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
       ),
     );
 
-    // الحصول على معرف ولي الأمر أو الموكل
-    String guardianId = userData['id'];
+    // الحصول على معرف المستخدم
+    String userId = userData['id'];
 
-    // تحويل إلى صفحة التابعين مع تمرير guardianId
+    // تحديد الشاشة بناءً على نوع الحساب
+    Widget nextScreen;
+    if (isParent) {
+      // إذا كان الحساب لولي الأمر
+      nextScreen = GuardianScreen(guardianId: userId);
+    } else {
+      // إذا كان الحساب للموكل
+      nextScreen = AgentScreen(agentId: userId);
+    }
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => GuardianScreen(guardianId: guardianId),
-      ),
+      MaterialPageRoute(builder: (context) => nextScreen),
     );
   }
 

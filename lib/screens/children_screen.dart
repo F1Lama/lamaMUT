@@ -22,6 +22,7 @@ class ChildrenScreen extends StatefulWidget {
 
 class _ChildrenScreenState extends State<ChildrenScreen> {
   late Future<List<Map<String, dynamic>>> _studentsFuture;
+  String? _selectedStudentId; // معرف الطالب المختار
 
   @override
   void initState() {
@@ -55,7 +56,6 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
               "name": doc['name'],
               "schoolClass": doc['schoolClass'],
               "stage": doc['stage'],
-              "isChecked": false,
             });
           }
         }
@@ -67,24 +67,20 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
     return students;
   }
 
-  void _toggleCheck(int index, List<Map<String, dynamic>> students) {
-    setState(() {
-      students[index]["isChecked"] = !students[index]["isChecked"];
-    });
-  }
-
   // دالة للتوجيه إلى الصفحة الصحيحة بناءً على الخدمة
   void _navigateToServiceScreen(List<Map<String, dynamic>> students) {
-    // تحديد الطلاب المحددين (checkbox مفعلة)
-    final selectedStudents =
-        students.where((student) => student["isChecked"]).toList();
-
-    if (selectedStudents.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("يرجى اختيار طالب واحد على الأقل")),
-      );
+    // التحقق من أن طالبًا واحدًا قد تم اختياره
+    if (_selectedStudentId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("يرجى اختيار طالب واحد")));
       return;
     }
+
+    // العثور على بيانات الطالب المختار
+    final selectedStudent = students.firstWhere(
+      (student) => student["id"] == _selectedStudentId,
+    );
 
     // فتح الصفحة المخصصة بناءً على نوع الخدمة
     switch (widget.serviceType) {
@@ -94,7 +90,7 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
           MaterialPageRoute(
             builder:
                 (context) => AttendanceScreen(
-                  studentId: selectedStudents.first["id"], // تمرير معرف الطالب
+                  studentId: selectedStudent["id"], // تمرير معرف الطالب
                   guardianId: widget.guardianId, // تمرير معرف ولي الأمر
                 ),
           ),
@@ -107,8 +103,8 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
           MaterialPageRoute(
             builder:
                 (context) => RequestPermissionScreen(
-                  studentId: selectedStudents.first["id"],
-                  studentName: selectedStudents.first["name"], // اسم الطالب
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
                 ),
           ),
         );
@@ -119,9 +115,8 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
           context,
           MaterialPageRoute(
             builder:
-                (context) => AuthorizationScreen(
-                  studentId: selectedStudents.first["id"],
-                ),
+                (context) =>
+                    AuthorizationScreen(studentId: selectedStudent["id"]),
           ),
         );
         break;
@@ -132,8 +127,8 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
           MaterialPageRoute(
             builder:
                 (context) => RequestHelpScreen(
-                  studentId: selectedStudents.first["id"],
-                  studentName: selectedStudents.first["name"], // اسم الطالب
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
                 ),
           ),
         );
@@ -203,17 +198,20 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                             textDirection: TextDirection.rtl,
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Checkbox(
-                                value: students[index]["isChecked"],
+                              Radio<String>(
+                                value: students[index]["id"],
+                                groupValue: _selectedStudentId,
                                 onChanged: (value) {
-                                  _toggleCheck(index, students);
+                                  setState(() {
+                                    _selectedStudentId = value;
+                                  });
                                 },
                                 activeColor: Color.fromARGB(
                                   255,
                                   1,
                                   113,
                                   189,
-                                ), // تعديل هنا للون الأزرق
+                                ), // لون الزر
                               ),
                               const SizedBox(width: 10),
                               Expanded(

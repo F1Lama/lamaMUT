@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/screens/login_screen.dart';
 import '../widgets/custom_button.dart';
 import 'login_employee_screen.dart'; // استيراد شاشة الموظفين
 //import 'login_school_screen.dart'; // استيراد شاشة المدرسة
@@ -32,7 +33,9 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => LoginSchoolScreen(),
+                    ),
                   );
                 },
               ),

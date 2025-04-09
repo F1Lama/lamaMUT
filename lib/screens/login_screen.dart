@@ -29,6 +29,7 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
           backgroundColor: Colors.green,
         ),
       );
+
       // الانتقال إلى شاشة المدرسة مباشرة بعد نجاح تسجيل الدخول
       Navigator.pushReplacement(
         context,
@@ -58,6 +59,26 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.green, // نفس درجة اللون الأخضر
+        elevation: 0,
+        title: const Text(
+          "تسجيل دخول المدرسة",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // العودة إلى الشاشة السابقة
+            Navigator.pop(context);
+          },
+        ),
+      ),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
