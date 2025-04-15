@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class PreviousRequestsScreen extends StatefulWidget {
+class AdminPreviousRequestsScreen extends StatefulWidget {
   @override
-  _PreviousRequestsScreenState createState() => _PreviousRequestsScreenState();
+  _AdminPreviousRequestsScreenState createState() =>
+      _AdminPreviousRequestsScreenState();
 }
 
-class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
-  DateTime? fromDate;
-  DateTime? toDate;
-  Stream<QuerySnapshot>? _filteredStream;
+class _AdminPreviousRequestsScreenState
+    extends State<AdminPreviousRequestsScreen> {
+  DateTime? fromDate; // تاريخ البداية
+  DateTime? toDate; // تاريخ النهاية
+  Stream<QuerySnapshot>? _filteredStream; // التدفق المفلتر
 
+  // دالة اختيار التاريخ
   Future<void> _selectDate(BuildContext context, bool isFromDate) async {
     DateTime? picked = await showDatePicker(
       context: context,
@@ -19,7 +22,6 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-
     if (picked != null) {
       setState(() {
         if (isFromDate) {
@@ -31,6 +33,7 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
     }
   }
 
+  // تطبيق الفلتر
   void _applyFilter() {
     if (fromDate == null || toDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,16 +45,22 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
     setState(() {
       _filteredStream =
           FirebaseFirestore.instance
-              .collection('requests')
+              .collectionGroup(
+                'all_requests',
+              ) // استخدام collectionGroup إذا كنت تريد دمج الكولكشنين
               .where(
-                'exitTime',
+                'status',
+                isEqualTo: 'completed',
+              ) // عرض الطلبات المكتملة فقط
+              .where(
+                'timestamp',
                 isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate!),
               )
               .where(
-                'exitTime',
+                'timestamp',
                 isLessThanOrEqualTo: Timestamp.fromDate(toDate!),
               )
-              .orderBy('exitTime', descending: true)
+              .orderBy('timestamp', descending: true)
               .snapshots();
     });
   }
@@ -72,6 +81,7 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // شريط اختيار التواريخ
             Row(
               children: [
                 Expanded(
@@ -92,6 +102,8 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
               ],
             ),
             SizedBox(height: 10),
+
+            // زر تطبيق الفلتر
             Align(
               alignment: Alignment.center,
               child: ElevatedButton.icon(
@@ -105,13 +117,18 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
               ),
             ),
             SizedBox(height: 20),
+
+            // قائمة الطلبات
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream:
                     _filteredStream ??
                     FirebaseFirestore.instance
-                        .collection('requests')
-                        .orderBy('exitTime', descending: true)
+                        .collectionGroup(
+                          'all_requests',
+                        ) // استخدام collectionGroup إذا كنت تريد دمج الكولكشنين
+                        .where('status', isEqualTo: 'completed')
+                        .orderBy('timestamp', descending: true)
                         .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -141,6 +158,7 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
     );
   }
 
+  // ويدجت اختيار التاريخ
   Widget _buildDateSelector(String label, DateTime? date, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
@@ -160,11 +178,13 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
     );
   }
 
+  // ويدجت عرض الطلب
   Widget _buildRequestTile(Map<String, dynamic> data) {
     final studentName = data['studentName'] ?? 'غير معروف';
     final grade = data['grade'] ?? 'غير معروف';
+    final decision = data['decision'] ?? 'غير محدد';
     final exitTime =
-        (data['exitTime'] as Timestamp?)?.toDate() ?? DateTime.now();
+        (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
     final formattedExitTime = DateFormat('yyyy-MM-dd – HH:mm').format(exitTime);
 
     return Card(
@@ -186,6 +206,11 @@ class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
             Text(
               "وقت الخروج: $formattedExitTime",
               style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "القرار: ${decision == 'accepted' ? 'مقبول' : 'مرفوض'}",
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ],
         ),

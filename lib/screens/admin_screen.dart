@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:map/screens/Permission_screen.dart';
-import 'package:map/screens/PreviousRequestsScreen.dart';
+import 'package:map/screens/admin_previous_requests_screen.dart';
+import 'package:map/screens/teacher_previous_requests_screen.dart';
 import '../widgets/custom_button.dart'; // استيراد الزر الصحيح
 import '../widgets/custom_drawer.dart';
 import 'exit_permits_screen.dart';

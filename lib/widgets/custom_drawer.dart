@@ -2,19 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:map/screens/login_employee_screen.dart';
+import 'package:map/screens/BarcodeScannerScreen.dart';
+import 'package:map/screens/add_parents_screen.dart';
+import 'package:map/screens/add_students_screen.dart';
+import 'package:map/screens/add_teachers_screen.dart';
+import 'package:map/screens/home_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:typed_data';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 // استيراد الشاشات المناسبة
-import 'package:map/screens/BarcodeScannerScreen.dart';
-import 'package:map/screens/add_parents_screen.dart';
-import 'package:map/screens/add_students_screen.dart';
-import 'package:map/screens/add_teachers_screen.dart';
-import 'package:map/screens/login_screen.dart';
-import 'package:map/screens/home_screen.dart'; // إضافة استيراد HomeScreen
+// إضافة استيراد HomeScreen
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -55,7 +54,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddStudentsScreen()),
+                MaterialPageRoute(builder: (context) => StudentBarcodeScreen()),
               );
             },
           ),
@@ -65,7 +64,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddTeachersScreen()),
+                MaterialPageRoute(builder: (context) => AddTeacherScreen()),
               );
             },
           ),
@@ -76,25 +75,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               print("📎 تم الضغط على الأعذار المرفقة");
             },
           ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton.icon(
-                      onPressed: generateAndSaveBarcodes,
-                      icon: const Icon(Icons.qr_code, color: Colors.white),
-                      label: const Text(
-                        "توليد وحفظ أكواد QR",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
-                    ),
-          ),
+
           drawerItem(
             title: "مسح الباركود",
             icon: Icons.qr_code_scanner,

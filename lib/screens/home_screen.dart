@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 10),
               // زر "ولي أمر الطالب"
               CustomButton(
-                title: "ولي أمر الطالب",
+                title: " ولي أمر الطالب والموكل",
                 onPressed: () {
                   Navigator.push(
                     context,

@@ -28,10 +28,11 @@ class AddAdminScreen extends StatelessWidget {
   final TextEditingController idController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final String senderEmail = "your-email@example.com"; // ✉️ بريد المشرف
-  final String senderPassword = "your-app-password"; // 🔑 كلمة مرور التطبيق
 
-  // دالة التحقق من التكرار
+  final String senderEmail = "8ffaay01@gmail.com"; // ✉️ بريد المشرف
+  final String senderPassword =
+      "vljn jaxv hukr qbct"; // 🔑 كلمة مرور التطبيق (App Password)
+
   Future<bool> isAdminDuplicate(String id, String email, String phone) async {
     var querySnapshot =
         await FirebaseFirestore.instance
@@ -39,22 +40,24 @@ class AddAdminScreen extends StatelessWidget {
             .where('id', isEqualTo: id)
             .get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     querySnapshot =
         await FirebaseFirestore.instance
             .collection('admins')
             .where('email', isEqualTo: email)
             .get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     querySnapshot =
         await FirebaseFirestore.instance
             .collection('admins')
             .where('phone', isEqualTo: phone)
             .get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     return false;
   }
 
-  // دالة إضافة الإداري
   Future<void> addAdmin(BuildContext context) async {
     String name = nameController.text.trim();
     String id = idController.text.trim();
@@ -91,7 +94,9 @@ class AddAdminScreen extends StatelessWidget {
         'password': password,
         'createdAt': Timestamp.now(),
       });
+
       await sendEmail(email, name, id, password);
+
       showSnackBar(
         context,
         "تمت إضافة الإداري بنجاح، وتم إرسال كلمة المرور عبر البريد",
@@ -106,93 +111,48 @@ class AddAdminScreen extends StatelessWidget {
     }
   }
 
-  // دالة إرسال البريد الإلكتروني مع دعم جميع أنواع الإيميلات
   Future<void> sendEmail(
     String recipientEmail,
     String name,
     String adminId,
     String password,
   ) async {
-    final smtpServer = getSmtpServer(senderEmail, senderPassword);
+    final smtpServer = gmail(senderEmail, senderPassword);
+
     final message =
         Message()
-          ..from = Address(senderEmail, "Mutabie App")
+          ..from = Address(senderEmail, 'Mutabie App')
           ..recipients.add(recipientEmail)
-          ..subject = "تم تسجيلك في تطبيق متابع"
+          ..subject = 'تم تسجيلك في تطبيق متابع'
+          ..headers['X-Priority'] = '1'
+          ..headers['X-MSMail-Priority'] = 'High'
           ..text =
-              "مرحبًا $name،\n\n"
-              "تم تسجيلك بنجاح في تطبيق متابع.\n"
-              "بيانات تسجيل الدخول الخاصة بك:\n"
-              "رقم الإداري: $adminId\n"
-              "كلمة المرور: $password\n\n"
-              "يمكنك الآن تسجيل الدخول إلى التطبيق.\n\n"
-              "تحياتنا، فريق متابع.";
+              'مرحبًا $name،\n\n'
+              'تم تسجيلك بنجاح في تطبيق متابع.\n'
+              'رقم الإداري: $adminId\n'
+              'كلمة المرور: $password\n\n'
+              'تحياتنا،\nفريق متابع.'
+          ..html = """
+        <html>
+          <body style="font-family: Arial; direction: rtl;">
+            <h3>مرحبًا $name،</h3>
+            <p>تم تسجيلك بنجاح في <strong>تطبيق متابع</strong>.</p>
+            <p><strong>رقم الإداري:</strong> $adminId<br>
+            <strong>كلمة المرور:</strong> $password</p>
+            <p>يمكنك الآن تسجيل الدخول إلى التطبيق.</p>
+            <p>تحياتنا،<br>فريق متابع</p>
+          </body>
+        </html>
+      """;
 
     try {
       await send(message, smtpServer);
-      print("تم إرسال البريد الإلكتروني بنجاح إلى $recipientEmail");
+      print("✅ تم إرسال البريد الإلكتروني بنجاح إلى $recipientEmail");
     } catch (e) {
-      print("خطأ في إرسال البريد: $e");
+      print("❌ خطأ في إرسال البريد: $e");
     }
   }
 
-  // دالة اختيار SMTP تلقائيًا بناءً على نوع البريد الإلكتروني
-  SmtpServer getSmtpServer(String email, String password) {
-    String domain = email.split('@').last.toLowerCase();
-    switch (domain) {
-      case 'gmail.com':
-        return gmail(email, password);
-      case 'outlook.com':
-      case 'hotmail.com':
-      case 'live.com':
-        return SmtpServer(
-          'smtp.office365.com',
-          port: 587,
-          username: email,
-          password: password,
-          ssl: false,
-          allowInsecure: true,
-        );
-      case 'yahoo.com':
-        return SmtpServer(
-          'smtp.mail.yahoo.com',
-          port: 587,
-          username: email,
-          password: password,
-          ssl: false,
-          allowInsecure: true,
-        );
-      case 'icloud.com':
-        return SmtpServer(
-          'smtp.mail.me.com',
-          port: 587,
-          username: email,
-          password: password,
-          ssl: false,
-          allowInsecure: true,
-        );
-      case 'zoho.com':
-        return SmtpServer(
-          'smtp.zoho.com',
-          port: 587,
-          username: email,
-          password: password,
-          ssl: true,
-          allowInsecure: false,
-        );
-      default:
-        return SmtpServer(
-          'smtp.$domain',
-          port: 587,
-          username: email,
-          password: password,
-          ssl: false,
-          allowInsecure: true,
-        );
-    }
-  }
-
-  // دالة توليد كلمة مرور عشوائية
   String generateRandomPassword() {
     const String chars =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -203,7 +163,6 @@ class AddAdminScreen extends StatelessWidget {
     ).join();
   }
 
-  // دالة لعرض الرسائل
   void showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(
       context,
@@ -256,7 +215,7 @@ class AddAdminScreen extends StatelessWidget {
             CustomButtonAuth(
               title: "إضافة",
               onPressed: () async => await addAdmin(context),
-              color: Colors.blue, // إضافة اللون هنا
+              color: Colors.blue,
             ),
           ],
         ),

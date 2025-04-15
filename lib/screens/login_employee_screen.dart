@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/screens/admin_screen.dart';
+import 'package:map/providers/TeacherProvider.dart';
 import 'package:map/screens/teacher_screen.dart';
-import 'package:map/screens/home_screen.dart'; // استيراد شاشة HomeScreen
+import 'package:provider/provider.dart';
+import 'package:map/screens/admin_screen.dart';
+import 'package:map/screens/home_screen.dart';
 
 class LoginEmployeeScreen extends StatefulWidget {
   const LoginEmployeeScreen({Key? key}) : super(key: key);
@@ -95,11 +97,20 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
       ),
     );
 
+    // تخزين بيانات المستخدم في Provider
+    final teacherProvider = Provider.of<TeacherProvider>(
+      context,
+      listen: false,
+    );
+    if (role == "teacher") {
+      teacherProvider.setTeacherData(userData['id'], userData['name']);
+    }
+
+    // تحديد الصفحة التالية
     Widget nextScreen;
     if (role == "admin") {
       nextScreen = AdminScreen();
     } else {
-      // افترض أن هناك مدة محددة في بيانات المستخدم
       int exitMinutes = userData['exitDuration'] ?? 10; // افتراضياً 10 دقائق
       nextScreen = StudyStageScreen(
         exitDuration: Duration(minutes: exitMinutes),
@@ -131,7 +142,6 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // العودة إلى HomeScreen
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),

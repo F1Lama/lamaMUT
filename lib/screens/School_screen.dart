@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button_auth.dart';
-import 'change_location_screen.dart'; // استيراد ChangeLocationScreen
 
 class SchoolScreen extends StatelessWidget {
-  final String schoolName; // إضافة المتغير لتخزين اسم المدرسة
+  final String schoolName;
 
-  // إضافة constructor لتخزين اسم المدرسة
   const SchoolScreen({Key? key, required this.schoolName}) : super(key: key);
 
-  // دالة تسجيل الخروج (تم نقلها من LogoutScreen)
   void _logout(BuildContext context) {
     print("تم تسجيل الخروج بنجاح");
     Navigator.pushReplacementNamed(context, '/login');
@@ -30,7 +27,7 @@ class SchoolScreen extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        _logout(context); // استدعاء دالة تسجيل الخروج
+                        _logout(context);
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -58,7 +55,6 @@ class SchoolScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // المحتوى الرئيسي
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -73,7 +69,6 @@ class SchoolScreen extends StatelessWidget {
                     title: "الإداريين",
                     onPressed: () {
                       Navigator.pushNamed(context, '/AdminScreen');
-                      print("تم الضغط على الإداريين");
                     },
                   ),
                   const SizedBox(height: 35),
@@ -87,15 +82,14 @@ class SchoolScreen extends StatelessWidget {
                   CustomButtonAuth(
                     title: "تغيير موقع المدرسة",
                     onPressed: () {
-                      Navigator.pushNamed(context, '/ChangeLocationScreen');
+                      Navigator.pushNamed(context, '/MapScreen');
                     },
                   ),
                 ],
               ),
             ),
-            // زر القائمة في الزاوية العلوية اليمنى
             Align(
-              alignment: Alignment.topRight, // تغيير من topLeft إلى topRight
+              alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Builder(
@@ -103,9 +97,7 @@ class SchoolScreen extends StatelessWidget {
                     return IconButton(
                       icon: Icon(Icons.menu, color: Colors.blue),
                       onPressed: () {
-                        Scaffold.of(
-                          context,
-                        ).openEndDrawer(); // فتح القائمة الجانبية
+                        Scaffold.of(context).openEndDrawer();
                       },
                     );
                   },

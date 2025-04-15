@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:map/screens/PreviousRequestsScreen.dart';
+import 'package:map/screens/teacher_previous_requests_screen.dart';
 import 'package:map/screens/class_screen.dart';
 import 'package:map/widgets/teacher_custom_drawer.dart';
 import 'alert_screen.dart'; // استيراد صفحة AlertScreen
@@ -136,18 +136,7 @@ class _StudyStageScreenState extends State<StudyStageScreen>
                 );
               },
             ),
-            if (isTimerFinished)
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Text(
-                  "انتهت مدة الخروج!",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            // تم حذف النص "انتهت مدة الخروج!"
           ],
         ),
       ),

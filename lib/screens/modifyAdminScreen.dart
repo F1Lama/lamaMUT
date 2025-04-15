@@ -50,13 +50,10 @@ class _AdminListScreenState extends State<AdminListScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text("لا يوجد إداريين"));
           }
-
           final admins = snapshot.data!.docs;
-
           return Column(
             children: [
               Expanded(
@@ -67,7 +64,6 @@ class _AdminListScreenState extends State<AdminListScreen> {
                     var admin = admins[index];
                     var adminData = admin.data() as Map<String, dynamic>;
                     String adminId = admin.id;
-
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
@@ -91,6 +87,8 @@ class _AdminListScreenState extends State<AdminListScreen> {
                                 }
                               });
                             },
+                            activeColor:
+                                Colors.blue, // تعديل لون المربع عند التحديد
                           ),
                         ],
                       ),
@@ -138,23 +136,19 @@ class _AdminListScreenState extends State<AdminListScreen> {
   void _editSelectedAdmin() async {
     List<String> selectedIds =
         selectedAdmins.keys.where((id) => selectedAdmins[id] == true).toList();
-
     if (selectedIds.isEmpty || selectedIds.length > 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("يرجى اختيار إداري واحد فقط للتعديل")),
       );
       return;
     }
-
     String selectedId = selectedIds.first;
-
     try {
       DocumentSnapshot doc =
           await FirebaseFirestore.instance
               .collection('admins')
               .doc(selectedId)
               .get();
-
       if (doc.exists) {
         Map<String, dynamic> adminData = doc.data() as Map<String, dynamic>;
         _showEditDialog(context, selectedId, adminData);
@@ -180,7 +174,6 @@ class _AdminListScreenState extends State<AdminListScreen> {
     TextEditingController phoneController = TextEditingController(
       text: adminData['phone'],
     );
-
     showDialog(
       context: context,
       builder: (context) {
@@ -234,7 +227,6 @@ class _AdminListScreenState extends State<AdminListScreen> {
                             'id': idController.text.trim(),
                             'phone': phoneController.text.trim(),
                           });
-
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("تم تعديل البيانات بنجاح")),
@@ -254,14 +246,12 @@ class _AdminListScreenState extends State<AdminListScreen> {
   void _showDeleteDialog() {
     List<String> selectedIds =
         selectedAdmins.keys.where((id) => selectedAdmins[id] == true).toList();
-
     if (selectedIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("يرجى اختيار إداري واحد على الأقل للحذف")),
       );
       return;
     }
-
     showDialog(
       context: context,
       builder: (context) {

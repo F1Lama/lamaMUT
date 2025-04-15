@@ -61,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // التحقق من شروط كلمة المرور
     String passwordPattern =
-        r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&]).{8,}$';
+        r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&\.]).{8,}$';
     RegExp regExp = RegExp(passwordPattern);
     if (password.isEmpty || !regExp.hasMatch(password)) {
       ScaffoldMessenger.of(context).showSnackBar(

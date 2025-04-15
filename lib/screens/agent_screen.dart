@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:map/screens/PreviousRequestsScreen.dart';
+import 'package:map/screens/teacher_previous_requests_screen.dart';
 import 'package:map/widgets/guardian_custom_drawer.dart'; // استيراد القائمة الجانبية
 import 'package:map/screens/children_screen.dart';
 import 'package:map/screens/request_permission_screen.dart';

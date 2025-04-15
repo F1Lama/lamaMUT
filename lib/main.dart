@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart'; // استيراد Firebase Core
 import 'package:flutter/material.dart';
+import 'package:map/providers/TeacherProvider.dart';
+import 'package:map/providers/UserProvider.dart';
 import 'package:map/screens/change_location_screen.dart';
+import 'package:provider/provider.dart'; // استيراد Provider
 import 'firebase_options.dart'; // استيراد ملف التكوين
-import 'package:map/screens/add_admin_screen.dart';
-import 'package:map/screens/modifyAdminScreen.dart';
-import 'package:map/screens/login_screen.dart';
-//import 'package:map/screens/logout.dart';
-import 'package:map/screens/welcome_screen.dart';
+import 'screens/add_admin_screen.dart';
+import 'screens/modifyAdminScreen.dart';
+import 'screens/login_screen.dart';
+import 'screens/welcome_screen.dart';
 
 void main() async {
   // تهيئة Widgets وFirebase
@@ -14,7 +16,15 @@ void main() async {
   // تهيئة Firebase باستخدام التكوين من firebase_options.dart
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // تشغيل التطبيق
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => TeacherProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,12 +42,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const WelcomeScreen(), // شاشة الترحيب
         '/login': (context) => LoginSchoolScreen(), // شاشة تسجيل الدخول
-        //'/logout': (context) => LogoutScreen(), // شاشة تسجيل الخروج
         '/AddAdminScreen': (context) => AddAdminScreen(), // شاشة إضافة مشرف
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
-        // '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
         '/ChangeLocationScreen':
-            (context) => ChangeLocationScreen(), // إضافة المسار هنا
+            (context) => ChangeLocationScreen(), // شاشة تغيير الموقع
       },
     );
   }

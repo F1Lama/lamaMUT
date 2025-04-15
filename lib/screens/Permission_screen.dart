@@ -20,7 +20,14 @@ class PermissionScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('excuses').snapshots(),
+          stream:
+              FirebaseFirestore.instance
+                  .collection('excuses')
+                  .where(
+                    'status',
+                    isEqualTo: null,
+                  ) // عرض الطلبات التي لم يتم قبولها أو رفضها
+                  .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -35,7 +42,9 @@ class PermissionScreen extends StatelessWidget {
                 itemCount: requests.length,
                 itemBuilder: (context, index) {
                   final request = requests[index];
-                  final studentName = request['studentName'];
+                  final data = request.data() as Map<String, dynamic>;
+                  final studentName = data['studentName'];
+                  final grade = data['grade']; // الحقل grade موجود الآن
                   return InkWell(
                     onTap: () {
                       Navigator.push(

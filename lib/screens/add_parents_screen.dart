@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/widgets/file_upload_widget.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
@@ -9,7 +8,23 @@ class AddParentsScreen extends StatelessWidget {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final String senderEmail = "8ffaay01@gmail.com"; // ✉️ بريد المرسل
-  final String senderPassword = "urwn frcb fzug ucyz"; // 🔑 كلمة مرور التطبيق
+  final String senderPassword = "vljn jaxv hukr qbct"; // 🔑 كلمة مرور التطبيق
+
+  // ✅ تعريف المتحكمات
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+
+  // تحديد اللون الأزرق الفاتح المستخدم للأيقونات والزر
+  final Color _buttonColor = Color(0xFF0171BD); // الأزرق الفاتح
+  final Color _textFieldFillColor = Colors.grey[200]!; // اللون الرمادي الفاتح
+  final Color _textColor = const Color.fromARGB(
+    255,
+    12,
+    68,
+    114,
+  ); // تغيير النص إلى الأزرق داخل المربعات
 
   @override
   Widget build(BuildContext context) {
@@ -34,73 +49,74 @@ class AddParentsScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: FileUploadWidget(
-          title: "إضافة أولياء الأمور",
-          onConfirm: (fileName, fileData) async {
-            if (fileData != null) {
-              try {
-                for (var row in fileData) {
-                  if (row.isNotEmpty && row.length >= 5) {
-                    // تعديلنا هنا
-                    String id = row[0]; // ID
-                    String name = row[1]; // Name
-                    String phone = row[2]; // Phone
-                    String email = row[3]; // Email
-                    String studentName = row[4]; // اسم الطالب
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20),
+            _buildTextField(nameController, "اسم ولي الأمر", Icons.person),
+            SizedBox(height: 10),
+            _buildTextField(
+              idController,
+              "رقم الهوية",
+              Icons.credit_card,
+              isNumber: true,
+            ),
+            SizedBox(height: 10),
+            _buildTextField(
+              phoneController,
+              "الهاتف",
+              Icons.phone,
+              isNumber: true,
+            ),
+            SizedBox(height: 10),
+            _buildTextField(emailController, "البريد الإلكتروني", Icons.email),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () async {
+                // يتم أخذ البيانات من الحقول المدخلة
+                String parentName = nameController.text;
+                String parentId = idController.text;
+                String phone = phoneController.text;
+                String email = emailController.text;
 
-                    bool isDuplicate = await isParentDuplicate(
-                      id,
-                      email,
-                      phone,
-                    );
-                    if (isDuplicate) {
-                      print("⚠️ ولي الأمر $name مسجل مسبقًا، لم يتم إضافته.");
-                      continue;
-                    }
-
-                    String password = generateRandomPassword();
-                    await firestore.collection('parents').add({
-                      'id': id,
-                      'name': name,
-                      'phone': phone,
-                      'email': email,
-                      'studentName': studentName, // إضافة اسم الطالب
-                      'password': password,
-                      'createdAt': Timestamp.now(),
-                    });
-
-                    await sendEmail(
-                      email,
-                      name,
-                      id,
-                      password,
-                      studentName,
-                    ); // إضافة اسم الطالب في البريد
-                    print("✅ تمت إضافة ولي الأمر: $name وتم إرسال البريد.");
-                  } else {
-                    print("❌ صف غير صالح: $row");
-                  }
+                bool isDuplicate = await isParentDuplicate(
+                  parentId,
+                  email,
+                  phone,
+                );
+                if (isDuplicate) {
+                  print("⚠️ ولي الأمر $parentName مسجل مسبقًا، لم يتم إضافته.");
+                  return;
                 }
+
+                // توليد كلمة مرور عشوائية
+                String password = generateRandomPassword();
+
+                // إضافة البيانات إلى Firebase
+                await firestore.collection('parents').add({
+                  'id': parentId,
+                  'name': parentName,
+                  'phone': phone,
+                  'email': email,
+                  'password': password,
+                  'createdAt': Timestamp.now(),
+                });
+
+                // إرسال البريد الإلكتروني
+                await sendEmail(email, parentName, parentId, password);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "تمت إضافة أولياء الأمور وإرسال كلمات المرور بنجاح!",
+                      "تمت إضافة ولي الأمر وتم إرسال البريد بنجاح!",
                     ),
                   ),
                 );
-              } catch (e) {
-                print("❌ خطأ أثناء التخزين: $e");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("حدث خطأ أثناء التخزين: $e")),
-                );
-              }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("لم يتم اختيار ملف!")),
-              );
-            }
-          },
+              },
+              child: Text('إضافة ولي الأمر'),
+              style: ElevatedButton.styleFrom(backgroundColor: _buttonColor),
+            ),
+          ],
         ),
       ),
     );
@@ -135,7 +151,6 @@ class AddParentsScreen extends StatelessWidget {
     String name,
     String parentId,
     String password,
-    String studentName,
   ) async {
     final smtpServer = getSmtpServer(senderEmail, senderPassword);
 
@@ -149,7 +164,6 @@ class AddParentsScreen extends StatelessWidget {
               "تم تسجيلك بنجاح في تطبيق متابع.\n"
               "بيانات تسجيل الدخول الخاصة بك:\n"
               "رقم ولي الأمر: $parentId\n"
-              "اسم الطالب: $studentName\n" // إضافة اسم الطالب في البريد الإلكتروني
               "كلمة المرور: $password\n\n"
               "يرجى تغيير كلمة المرور بعد تسجيل الدخول.\n\n"
               "تحياتنا، فريق متابع.";
@@ -228,5 +242,30 @@ class AddParentsScreen extends StatelessWidget {
       8,
       (index) => chars[random.nextInt(chars.length)],
     ).join();
+  }
+
+  // ✅ بناء حقل النص بشكل مشترك (مشابه للطلاب)
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool isNumber = false,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: _buttonColor),
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(icon, color: _buttonColor), // نفس اللون للأيقونة
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: _buttonColor),
+        ),
+        hintStyle: TextStyle(color: _textColor), // تغيير النص إلى اللون الأزرق
+        filled: true,
+        fillColor: _textFieldFillColor, // خلفية حقل الإدخال
+      ),
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+    );
   }
 }

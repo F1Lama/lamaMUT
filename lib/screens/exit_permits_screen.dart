@@ -51,20 +51,20 @@ class ExitPermitsScreen extends StatelessWidget {
           stream:
               firestore
                   .collection('requests')
-                  .where('status', isEqualTo: 'active')
+                  .where(
+                    'status',
+                    isEqualTo: 'active',
+                  ) // عرض الطلبات النشطة فقط
                   .orderBy('exitTime', descending: true)
                   .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(child: Text("خطأ: ${snapshot.error.toString()}"));
             }
-
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
-
             final requests = snapshot.data!.docs;
-
             if (requests.isEmpty) {
               return Center(
                 child: Text(
@@ -73,14 +73,12 @@ class ExitPermitsScreen extends StatelessWidget {
                 ),
               );
             }
-
             return ListView.builder(
               itemCount: requests.length,
               itemBuilder: (context, index) {
                 final request = requests[index];
                 final data = request.data() as Map<String, dynamic>;
                 final exitTime = (data['exitTime'] as Timestamp).toDate();
-
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -92,6 +90,7 @@ class ExitPermitsScreen extends StatelessWidget {
                               grade: data['grade'],
                               teacherName: data['teacherName'],
                               exitTime: exitTime.toString(),
+                              requestId: request.id, // تمرير معرف الطلب
                             ),
                       ),
                     );

@@ -105,6 +105,7 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                 (context) => RequestPermissionScreen(
                   studentId: selectedStudent["id"],
                   studentName: selectedStudent["name"], // اسم الطالب
+                  
                 ),
           ),
         );

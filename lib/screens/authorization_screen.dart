@@ -55,7 +55,7 @@ class AuthorizationScreen extends StatelessWidget {
                 child: CustomButtonAuth(
                   title: 'تسجيل',
                   onPressed: () async {
-                    if (_validateFields(context)) {
+                    if (await _validateFields(context)) {
                       try {
                         // إنشاء حساب جديد باستخدام Firebase Authentication
                         final UserCredential userCredential = await FirebaseAuth
@@ -69,9 +69,7 @@ class AuthorizationScreen extends StatelessWidget {
                         // حفظ بيانات الحساب في Firestore
                         await FirebaseFirestore.instance
                             .collection('Authorizations')
-                            .doc(
-                              userCredential.user!.uid,
-                            ) // استخدام معرف المستخدم كمفتاح
+                            .doc(userCredential.user!.uid)
                             .set({
                               'name': nameController.text,
                               'id': idController.text,
@@ -105,8 +103,25 @@ class AuthorizationScreen extends StatelessWidget {
     );
   }
 
+  // دالة للتحقق من أن الـ ID غير مستخدم مسبقًا
+  Future<bool> _isIdAvailable(String id) async {
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('Authorizations')
+              .where('id', isEqualTo: id)
+              .get();
+
+      // إذا كانت النتيجة تحتوي على مستندات، فهذا يعني أن الـ ID مستخدم مسبقًا
+      return querySnapshot.docs.isEmpty;
+    } catch (e) {
+      print("حدث خطأ أثناء التحقق من الـ ID: $e");
+      return false; // افتراض أن الـ ID غير متاح في حالة حدوث خطأ
+    }
+  }
+
   // دالة للتحقق من صحة الحقول
-  bool _validateFields(BuildContext context) {
+  Future<bool> _validateFields(BuildContext context) async {
     final name = nameController.text.trim();
     final id = idController.text.trim();
     final password = passwordController.text.trim();
@@ -120,13 +135,19 @@ class AuthorizationScreen extends StatelessWidget {
     }
 
     // التحقق من رقم الموكل
-    if (id.isEmpty ||
-        int.tryParse(id) == null ||
-        id.length < 8 ||
-        id.length > 15) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("يرجى إدخال رقم موكل صالح (8-15 رقمًا)")),
-      );
+    if (id.isEmpty || int.tryParse(id) == null || id.length < 8) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("يرجى إدخال رقم موكل صالح")));
+      return false;
+    }
+
+    // التحقق من أن الـ ID غير مستخدم مسبقًا
+    final isIdAvailable = await _isIdAvailable(id);
+    if (!isIdAvailable) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("رقم الموكل هذا مستخدم مسبقًا")));
       return false;
     }
 
@@ -138,7 +159,7 @@ class AuthorizationScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام، وطولها بين 8 و20 حرفًا",
+            "كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام",
           ),
         ),
       );

@@ -43,8 +43,10 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
       String errorMessage = '';
       if (e.code == 'user-not-found') {
         errorMessage = "الحساب غير مسجل.";
-      } else if (e.code == 'wrong-password' || e.code == 'invalid-email') {
-        errorMessage = "البيانات المدخلة غير صحيحة.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "كلمة المرور خاطئة.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "البريد الإلكتروني غير صحيح.";
       } else {
         errorMessage = "حدث خطأ: ${e.message}";
       }
@@ -52,6 +54,14 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
       // عرض رسالة الخطأ باستخدام SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      // عرض رسالة خطأ عامة في حالة حدوث خطأ غير متوقع
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("حدث خطأ غير متوقع: $e"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

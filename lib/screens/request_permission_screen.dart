@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 
 class RequestPermissionScreen extends StatefulWidget {
   final String studentId;
@@ -20,7 +22,36 @@ class RequestPermissionScreen extends StatefulWidget {
 class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
   final TextEditingController reasonController = TextEditingController();
   DateTime? selectedDate;
-  TimeOfDay? selectedTime; // الوقت المحدد
+  TimeOfDay? selectedTime;
+  PlatformFile? pickedFile;
+  String? uploadedFileUrl;
+
+  Future<void> _pickAndUploadFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          pickedFile = result.files.first;
+        });
+        final storageRef = FirebaseStorage.instance.ref().child(
+          'excuse_files/${pickedFile!.name}',
+        );
+        final uploadTask = storageRef.putData(pickedFile!.bytes!);
+        final snapshot = await uploadTask.whenComplete(() {});
+        final downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          uploadedFileUrl = downloadUrl;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('حدث خطأ أثناء اختيار أو تحميل الملف: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +138,31 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
                       "الوقت المختار: ${_formatTime(selectedTime!)}",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
+              const SizedBox(height: 20),
+              CustomLabel(text: 'إرفاق ملف PDF (اختياري)'),
+              InkWell(
+                onTap: _pickAndUploadFile,
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      pickedFile != null
+                          ? "ملف مرفوع: ${pickedFile!.name}"
+                          : "اضغط لاختيار ملف PDF",
+                      style: TextStyle(fontSize: 16, color: Colors.blue),
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -122,11 +171,18 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                   onPressed: () async {
                     if (_validateFields()) {
                       try {
+                        // إنشاء الحقل grade بصيغة "المرحلة/الكلاس"
+                        final stage =
+                            "ثالث ثانوي"; // استبدل هذه القيمة بالقيمة الفعلية
+                        final schoolClass =
+                            "3"; // استبدل هذه القيمة بالقيمة الفعلية
+                        final grade = "$stage/$schoolClass";
+
                         await FirebaseFirestore.instance.collection('excuses').add({
                           'studentId': widget.studentId,
                           'studentName': widget.studentName,
-                          'schoolClass': '', // <-- هذا السطر هو اللي نحتاجه
-                          'reason': reasonController.text,
+                          'schoolClass': schoolClass, // الكلاس
+                          'reason': reasonController.text.trim(), // السبب
                           'date':
                               selectedDate != null
                                   ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
@@ -135,16 +191,22 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                               selectedTime != null
                                   ? _formatTime(selectedTime!)
                                   : '',
+                          'attachedFileUrl':
+                              uploadedFileUrl ?? '', // إضافة رابط الملف المرفق
                           'timestamp': DateTime.now(),
+                          'grade': grade, // إضافة الحقل grade مباشرة
+                          'status': 'pending', // حالة الطلب (قيد الانتظار)
                         });
 
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('تم إرسال الطلب بنجاح')),
+                          SnackBar(content: Text("تم إرسال الطلب بنجاح!")),
                         );
                         _clearFields();
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('حدث خطأ أثناء الإرسال: $e')),
+                          SnackBar(
+                            content: Text("حدث خطأ أثناء إرسال الطلب: $e"),
+                          ),
                         );
                       }
                     }
@@ -182,6 +244,8 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
     setState(() {
       selectedDate = null;
       selectedTime = null;
+      pickedFile = null;
+      uploadedFileUrl = null;
     });
   }
 }

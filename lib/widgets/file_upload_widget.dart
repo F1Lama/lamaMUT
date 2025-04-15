@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:excel/excel.dart';
+import 'dart:typed_data';
 
 class FileUploadWidget extends StatefulWidget {
   final String title;
@@ -17,39 +19,59 @@ class FileUploadWidget extends StatefulWidget {
 
 class _FileUploadWidgetState extends State<FileUploadWidget> {
   String? selectedFileName;
-  List<List<dynamic>>? fileData; // لتخزين بيانات الملف
+  List<List<dynamic>>? fileData;
 
-  // دالة لاختيار الملف
+  // دالة لاختيار ملف Excel
   Future<void> pickFile() async {
+    // تأكد من أن المستخدم يختار فقط ملفات .xlsx
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['csv'],
+      allowedExtensions: ['xlsx'],
     );
-    if (result != null) {
-      setState(() {
-        selectedFileName = result.files.single.name;
-      });
 
-      // قراءة محتوى الملف
-      final fileBytes = result.files.single.bytes;
-      if (fileBytes != null) {
-        final fileContent = String.fromCharCodes(
-          fileBytes,
-        ); // تحويل الملف إلى نص
-        fileData = parseCSV(fileContent); // تحليل الملف CSV
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.single;
+
+      if (file.bytes != null) {
+        final Uint8List fileBytes = file.bytes!;
+
+        setState(() {
+          selectedFileName = file.name;
+        });
+
+        // محاولة معالجة الملف
+        try {
+          final excel = Excel.decodeBytes(fileBytes);
+          List<List<dynamic>> rows = [];
+
+          for (final sheetName in excel.tables.keys) {
+            final sheet = excel.tables[sheetName];
+            if (sheet != null) {
+              for (var row in sheet.rows) {
+                rows.add(row.map((cell) => cell?.value).toList());
+              }
+            }
+          }
+
+          if (rows.isEmpty) {
+            print("❌ الملف فارغ أو لا يحتوي على بيانات.");
+          } else {
+            setState(() {
+              fileData = rows;
+            });
+            print("تم تحميل الملف بنجاح");
+          }
+        } catch (e) {
+          print("خطأ أثناء قراءة الملف: $e");
+        }
       }
     } else {
-      print("لم يتم اختيار أي ملف");
+      // في حال لم يتم اختيار أي ملف
+      print("❌ لم يتم اختيار أي ملف");
     }
   }
 
-  // دالة لتحليل ملف CSV
-  List<List<dynamic>> parseCSV(String csvContent) {
-    final rows = csvContent.split('\n'); // تقسيم الملف إلى صفوف
-    return rows.map((row) => row.split(',')).toList(); // تقسيم كل صف إلى أعمدة
-  }
-
-  // دالة للتعامل مع زر التأكيد
+  // تأكيد التحميل
   void confirmUpload(BuildContext context) {
     if (selectedFileName != null && fileData != null) {
       widget.onConfirm(selectedFileName, fileData);
@@ -67,7 +89,6 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: pickFile,
@@ -80,7 +101,7 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
             ),
             child: Center(
               child: Text(
-                selectedFileName ?? "اختر ملف CSV",
+                selectedFileName ?? "اختر ملف Excel (.xlsx)",
                 style: const TextStyle(
                   color: Colors.black54,
                   fontSize: 18,
@@ -98,7 +119,7 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
               borderRadius: BorderRadius.circular(25),
             ),
           ),
-          onPressed: () => confirmUpload(context), // استدعاء دالة التأكيد
+          onPressed: () => confirmUpload(context),
           child: const Text(
             "تأكيد",
             style: TextStyle(
