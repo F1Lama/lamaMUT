@@ -2,18 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:map/screens/BarcodeScannerScreen.dart';
+import 'package:map/screens/StudentSearchScreen.dart';
 import 'package:map/screens/add_parents_screen.dart';
-import 'package:map/screens/add_students_screen.dart';
+import 'package:map/screens/add_students_screen.dart' as student; // إضافة بادئة
 import 'package:map/screens/add_teachers_screen.dart';
 import 'package:map/screens/home_screen.dart';
+import 'package:map/screens/BarcodeScannerScreen.dart' as barcode; // إضافة بادئة
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:typed_data';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-
-// استيراد الشاشات المناسبة
-// إضافة استيراد HomeScreen
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -54,7 +52,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => StudentBarcodeScreen()),
+                MaterialPageRoute(builder: (context) => student.StudentBarcodeScreen()), // استخدام البادئة
               );
             },
           ),
@@ -75,14 +73,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
               print("📎 تم الضغط على الأعذار المرفقة");
             },
           ),
-
           drawerItem(
             title: "مسح الباركود",
             icon: Icons.qr_code_scanner,
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => BarcodeScannerScreen()),
+                MaterialPageRoute(builder: (context) => barcode.BarcodeScannerScreen()), // استخدام البادئة
+              );
+            },
+          ),
+          drawerItem(
+            title: "استعلام عن بيانات طالب", // ✅ إضافة خانة جديدة
+            icon: Icons.search,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => StudentSearchScreen()),
               );
             },
           ),
@@ -141,9 +148,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
     } catch (e) {
       // عرض رسالة خطأ في حال فشل تسجيل الخروج
       print("❌ خطأ في تسجيل الخروج: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('فشل تسجيل الخروج: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('فشل تسجيل الخروج: $e')),
+      );
     }
   }
 }
