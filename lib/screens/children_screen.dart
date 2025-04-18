@@ -7,7 +7,8 @@ import 'request_permission_screen.dart'; // صفحة طلب الاستئذان
 
 class ChildrenScreen extends StatefulWidget {
   final String guardianId; // معرف ولي الأمر المسجل
-  final String serviceType; // نوع الخدمة المختارة (مثل "الحضور" أو "طلب الاستئذان")
+  final String
+  serviceType; // نوع الخدمة المختارة (مثل "الحضور" أو "طلب الاستئذان")
 
   const ChildrenScreen({
     Key? key,
@@ -30,14 +31,17 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
     _studentsFuture = _fetchStudentsByGuardianId(widget.guardianId);
   }
 
-  Future<List<Map<String, dynamic>>> _fetchStudentsByGuardianId(String guardianId) async {
+  Future<List<Map<String, dynamic>>> _fetchStudentsByGuardianId(
+    String guardianId,
+  ) async {
     List<Map<String, dynamic>> students = [];
     try {
       // البحث مباشرة في المجموعة students
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('students')
-          .where('guardianId', isEqualTo: guardianId)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('students')
+              .where('guardianId', isEqualTo: guardianId)
+              .get();
 
       for (var doc in querySnapshot.docs) {
         students.add({
@@ -57,7 +61,9 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
   void _navigateToServiceScreen(List<Map<String, dynamic>> students) {
     // التحقق من أن طالبًا واحدًا قد تم اختياره
     if (_selectedStudentId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("يرجى اختيار طالب واحد")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("يرجى اختيار طالب واحد")));
       return;
     }
 
@@ -72,10 +78,11 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AttendanceScreen(
-              studentId: selectedStudent["id"], // تمرير معرف الطالب
-              guardianId: widget.guardianId, // تمرير معرف ولي الأمر
-            ),
+            builder:
+                (context) => AttendanceScreen(
+                  studentId: selectedStudent["id"], // تمرير معرف الطالب
+                  guardianId: widget.guardianId, // تمرير معرف ولي الأمر
+                ),
           ),
         );
         break;
@@ -84,10 +91,11 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RequestPermissionScreen(
-              studentId: selectedStudent["id"],
-              studentName: selectedStudent["name"], // اسم الطالب
-            ),
+            builder:
+                (context) => RequestPermissionScreen(
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
+                ),
           ),
         );
         break;
@@ -96,7 +104,9 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AuthorizationScreen(studentId: selectedStudent["id"]),
+            builder:
+                (context) =>
+                    AuthorizationScreen(studentId: selectedStudent["id"]),
           ),
         );
         break;
@@ -105,10 +115,11 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RequestHelpScreen(
-              studentId: selectedStudent["id"],
-              studentName: selectedStudent["name"], // اسم الطالب
-            ),
+            builder:
+                (context) => RequestHelpScreen(
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
+                ),
           ),
         );
         break;
@@ -165,7 +176,10 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                       itemBuilder: (context, index) {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 15,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
                             borderRadius: BorderRadius.circular(10),
@@ -182,13 +196,21 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                                     _selectedStudentId = value;
                                   });
                                 },
-                                activeColor: const Color.fromARGB(255, 1, 113, 189), // لون الزر
+                                activeColor: const Color.fromARGB(
+                                  255,
+                                  1,
+                                  113,
+                                  189,
+                                ), // لون الزر
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   students[index]["name"],
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                   textAlign: TextAlign.right,
                                 ),
                               ),
@@ -208,7 +230,9 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 1, 113, 189),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                 ),
                 onPressed: () {
                   // الحصول على بيانات الطلاب من الـ FutureBuilder
@@ -218,7 +242,11 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
                 },
                 child: const Text(
                   "التالي",
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

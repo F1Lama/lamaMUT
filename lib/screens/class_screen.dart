@@ -8,7 +8,10 @@ class ClassScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("المرحلة الدراسية", style: TextStyle(color: Colors.white)),
+        title: Text(
+          "المرحلة الدراسية",
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -24,12 +27,10 @@ class ClassScreen extends StatelessWidget {
             CustomButton(
               title: "أولى ثانوي",
               onPressed: () {
-                // الانتقال إلى صفحة اختيار الكلاس مع تمرير اسم المرحلة
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => SelectClassScreen(stage: "أولى ثانوي"),
+                    builder: (context) => SelectClassScreen(stage: "أولى ثانوي"),
                   ),
                 );
               },
@@ -38,12 +39,10 @@ class ClassScreen extends StatelessWidget {
             CustomButton(
               title: "ثاني ثانوي",
               onPressed: () {
-                // الانتقال إلى صفحة اختيار الكلاس مع تمرير اسم المرحلة
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => SelectClassScreen(stage: "ثاني ثانوي"),
+                    builder: (context) => SelectClassScreen(stage: "ثاني ثانوي"),
                   ),
                 );
               },
@@ -52,12 +51,10 @@ class ClassScreen extends StatelessWidget {
             CustomButton(
               title: "ثالث ثانوي",
               onPressed: () {
-                // الانتقال إلى صفحة اختيار الكلاس مع تمرير اسم المرحلة
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => SelectClassScreen(stage: "ثالث ثانوي"),
+                    builder: (context) => SelectClassScreen(stage: "ثالث ثانوي"),
                   ),
                 );
               },

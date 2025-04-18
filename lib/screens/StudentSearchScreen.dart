@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:map/screens/student_card_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'student_card_screen.dart'; // استيراد صفحة البطاقة
 
 class StudentSearchScreen extends StatefulWidget {
   @override
@@ -9,7 +9,6 @@ class StudentSearchScreen extends StatefulWidget {
 
 class _StudentSearchScreenState extends State<StudentSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String? _searchResult;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -17,65 +16,55 @@ class _StudentSearchScreenState extends State<StudentSearchScreen> {
     String studentId = _searchController.text.trim();
 
     if (studentId.isEmpty) {
-      _showSnackBar('يرجى إدخال رقم الهوية');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('يرجى إدخال رقم الهوية')));
       return;
     }
 
-    // البحث عن الطالب في Firestore
     try {
       final studentDoc =
           await _firestore.collection('students').doc(studentId).get();
 
       if (studentDoc.exists) {
         final studentData = studentDoc.data()!;
-        final name = studentData['name'];
-        final stage = studentData['stage'];
-        final schoolClass = studentData['schoolClass'];
-        final guardianId = studentData['guardianId'];
-        final phone = studentData['phone'];
-
-        setState(() {
-          _searchResult = 'تم العثور على الطالب: $name - $stage - $schoolClass';
-        });
-
-        // الانتقال إلى شاشة البطاقة
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
                 (_) => StudentCardScreen(
-                  name: name,
-                  id: studentId,
-                  stage: stage,
-                  schoolClass: schoolClass,
-                  guardianId: guardianId,
+                  name: studentData['name'],
+                  id: studentData['id'],
+                  stage: studentData['stage'],
+                  schoolClass: studentData['schoolClass'],
+                  guardianId: studentData['guardianId'],
+                  guardianEmail: studentData['guardianEmail'],
+                  guardianPhone:
+                      studentData['phone'] ?? '', // قد يكون الهاتف غير متوفر
                   qrData:
-                      'اسم الطالب: $name\nرقم الهوية: $studentId\nالمرحلة: $stage\nالصف: $schoolClass\nرقم ولي الأمر: $guardianId\nرقم الجوال: $phone',
-                  guardianEmail: '', // سيتم تحديده لاحقًا
-                  guardianPhone: phone,
+                      'Name: ${studentData['name']}\nID: ${studentData['id']}\nStage: ${studentData['stage']}\nClass: ${studentData['schoolClass']}\nGuardian ID: ${studentData['guardianId']}\nEmail: ${studentData['guardianEmail']}',
                 ),
           ),
         );
       } else {
-        _showSnackBar('لم يتم العثور على الطالب');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('لم يتم العثور على الطالب')));
       }
     } catch (e) {
       print("❌ خطأ أثناء البحث عن الطالب: $e");
-      _showSnackBar('حدث خطأ أثناء البحث');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('حدث خطأ أثناء البحث')));
     }
-  }
-
-  void _showSnackBar(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('بحث عن بطاقة الطالب'),
-        backgroundColor: Color(0xFF4CAF50),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text('بحث عن الطالب'),
+        backgroundColor: Color.fromARGB(255, 1, 113, 189),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -85,12 +74,8 @@ class _StudentSearchScreenState extends State<StudentSearchScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: 'رقم الهوية',
-                labelStyle: TextStyle(color: Color(0xFF4CAF50)),
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search, color: Color(0xFF4CAF50)),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF4CAF50)),
-                ),
+                prefixIcon: Icon(Icons.search),
               ),
               keyboardType: TextInputType.number,
             ),
@@ -99,15 +84,9 @@ class _StudentSearchScreenState extends State<StudentSearchScreen> {
               onPressed: _searchStudent,
               child: Text('بحث'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF0171BD),
+                backgroundColor: Color.fromARGB(255, 1, 113, 189),
               ),
             ),
-            SizedBox(height: 20),
-            if (_searchResult != null)
-              Text(
-                _searchResult!,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
           ],
         ),
       ),

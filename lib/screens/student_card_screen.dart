@@ -87,7 +87,10 @@ class _StudentCardScreenState extends State<StudentCardScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset('assets/images/logo.png', height: 80),
+                      Image.asset(
+                        'https://i.postimg.cc/DwnKf079/321e9c9d-4d67-4112-a513-d368fc26b0c0.jpg',
+                        height: 80,
+                      ),
                       SizedBox(height: 10),
                       Text(
                         "بطاقة الطالب",

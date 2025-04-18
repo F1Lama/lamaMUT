@@ -1,3 +1,4 @@
+// students_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:map/providers/TeacherProvider.dart';
@@ -20,13 +21,6 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
   bool isLoading = true; // حالة التحميل
   String? selectedStudent; // الطالب المحدد
 
-  // خريطة لتحويل الأسماء العربية إلى الإنجليزية
-  final Map<String, String> stageMap = {
-    "أولى ثانوي": "first",
-    "ثاني ثانوي": "second",
-    "ثالث ثانوي": "third",
-  };
-
   @override
   void initState() {
     super.initState();
@@ -35,18 +29,12 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
 
   Future<void> fetchStudents() async {
     try {
-      // تحويل المرحلة إلى اللغة الإنجليزية
-      final formattedStage =
-          stageMap[widget.stage.trim()] ?? widget.stage.trim().toLowerCase();
-      final schoolClass = widget.schoolClass.trim();
-
       // استعلام Firestore للحصول على بيانات الطلاب
-      final studentSnapshot =
-          await firestore
-              .collection('stages') // المجموعة الرئيسية
-              .doc(formattedStage) // المرحلة (مثل "first")
-              .collection(schoolClass) // الكلاس (مثل "1")
-              .get();
+      final studentSnapshot = await firestore
+          .collection('students') // المجموعة الجديدة
+          .where('stage', isEqualTo: widget.stage.trim()) // تصفية بناءً على المرحلة
+          .where('schoolClass', isEqualTo: widget.schoolClass.trim()) // تصفية بناءً على الصف
+          .get();
 
       // طباعة المستندات المسترجعة للتحقق
       print(
@@ -95,93 +83,82 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
           },
         ),
       ),
-      body:
-          isLoading
-              ? Center(child: CircularProgressIndicator()) // عرض مؤشر التحميل
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child:
-                          students.isEmpty
-                              ? Center(child: Text("لم يتم العثور على طلاب"))
-                              : ListView(
-                                children:
-                                    students.keys.map((String key) {
-                                      return CheckboxListTile(
-                                        title: Text(
-                                          key,
-                                          textAlign: TextAlign.right,
-                                        ),
-                                        value: students[key],
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            // إعادة تعيين جميع الخيارات
-                                            students.updateAll(
-                                              (key, _) => false,
-                                            );
-                                            // تحديد الطالب الجديد
-                                            students[key] = value!;
-                                            // تخزين اسم الطالب المحدد
-                                            selectedStudent =
-                                                students[key] == true
-                                                    ? key
-                                                    : null;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      );
-                                    }).toList(),
-                              ),
-                    ),
-                    MaterialButton(
-                      onPressed: () async {
-                        // التحقق مما إذا تم اختيار طالب واحد على الأقل
-                        if (selectedStudent == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("يرجى اختيار طالب واحد على الأقل"),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        // الانتقال إلى صفحة تحديد الوقت
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => TimeSelectionScreen(
-                                  studentName: selectedStudent!,
-                                  grade:
-                                      "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
-                                  teacherName:
-                                      teacherName, // اسم المعلمة من الجلسة
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // عرض مؤشر التحميل
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: students.isEmpty
+                        ? Center(child: Text("لم يتم العثور على طلاب"))
+                        : ListView(
+                            children: students.keys.map((String key) {
+                              return CheckboxListTile(
+                                title: Text(
+                                  key,
+                                  textAlign: TextAlign.right,
                                 ),
+                                value: students[key],
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    // إعادة تعيين جميع الخيارات
+                                    students.updateAll((key, _) => false);
+                                    // تحديد الطالب الجديد
+                                    students[key] = value!;
+                                    // تخزين اسم الطالب المحدد
+                                    selectedStudent =
+                                        students[key] == true ? key : null;
+                                  });
+                                },
+                                controlAffinity: ListTileControlAffinity.leading,
+                              );
+                            }).toList(),
+                          ),
+                  ),
+                  MaterialButton(
+                    onPressed: () async {
+                      // التحقق مما إذا تم اختيار طالب واحد على الأقل
+                      if (selectedStudent == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("يرجى اختيار طالب واحد على الأقل"),
+                            backgroundColor: Colors.red,
                           ),
                         );
+                        return;
+                      }
 
-                        // إعادة تعيين الطالب المحدد بعد العودة
-                        setState(() {
-                          students[selectedStudent!] = false;
-                          selectedStudent = null;
-                        });
-                      },
-                      color: Color.fromARGB(255, 1, 113, 189),
-                      textColor: Colors.white,
-                      child: Text("موافق"),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      height: 50,
-                      minWidth: double.infinity,
+                      // الانتقال إلى صفحة تحديد الوقت
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TimeSelectionScreen(
+                            studentName: selectedStudent!,
+                            grade: "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
+                            teacherName: teacherName, // اسم المعلمة من الجلسة
+                          ),
+                        ),
+                      );
+
+                      // إعادة تعيين الطالب المحدد بعد العودة
+                      setState(() {
+                        students[selectedStudent!] = false;
+                        selectedStudent = null;
+                      });
+                    },
+                    color: Color.fromARGB(255, 1, 113, 189),
+                    textColor: Colors.white,
+                    child: Text("موافق"),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
                     ),
-                  ],
-                ),
+                    height: 50,
+                    minWidth: double.infinity,
+                  ),
+                ],
               ),
+            ),
     );
   }
 }

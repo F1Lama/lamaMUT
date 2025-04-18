@@ -4,10 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:map/screens/StudentSearchScreen.dart';
 import 'package:map/screens/add_parents_screen.dart';
-import 'package:map/screens/add_students_screen.dart' as student; // إضافة بادئة
+import 'package:map/screens/add_students_screen.dart' as student;
 import 'package:map/screens/add_teachers_screen.dart';
 import 'package:map/screens/home_screen.dart';
-import 'package:map/screens/BarcodeScannerScreen.dart' as barcode; // إضافة بادئة
+import 'package:map/screens/BarcodeScannerScreen.dart' as barcode;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:typed_data';
 import 'package:mailer/mailer.dart';
@@ -38,7 +38,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           const SizedBox(height: 40),
           drawerItem(
             title: "إضافة أولياء الأمور",
-            icon: Icons.group_add,
+            iconText: "+", // رمز نصي
             onTap: () {
               Navigator.push(
                 context,
@@ -48,17 +48,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           drawerItem(
             title: "إضافة طلاب",
-            icon: Icons.person_add,
+            iconText: "+", // رمز نصي
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => student.StudentBarcodeScreen()), // استخدام البادئة
+                MaterialPageRoute(
+                  builder: (context) => student.StudentBarcodeScreen(),
+                ),
               );
             },
           ),
           drawerItem(
             title: "إضافة المعلمين",
-            icon: Icons.school,
+            iconText: "+", // رمز نصي
             onTap: () {
               Navigator.push(
                 context,
@@ -75,17 +77,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           drawerItem(
             title: "مسح الباركود",
-            icon: Icons.qr_code_scanner,
+            icon: Icons.qr_code_scanner, // أيقونة من نوع IconData
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => barcode.BarcodeScannerScreen()), // استخدام البادئة
+                MaterialPageRoute(
+                  builder: (context) => barcode.BarcodeScannerScreen(),
+                ),
               );
             },
           ),
           drawerItem(
-            title: "استعلام عن بيانات طالب", // ✅ إضافة خانة جديدة
-            icon: Icons.search,
+            title: "استعلام عن بيانات طالب",
+            icon: Icons.search, // أيقونة من نوع IconData
             onTap: () {
               Navigator.push(
                 context,
@@ -96,7 +100,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           const Spacer(),
           drawerItem(
             title: "تسجيل خروج",
-            icon: Icons.logout,
+            icon: Icons.logout, // أيقونة من نوع IconData
             onTap: () => _logout(context),
           ),
           const SizedBox(height: 20),
@@ -105,10 +109,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  // ✅ الدالة المصححة مع إضافة return
+  // ✅ الدالة المعدلة لدعم String و IconData
   Widget drawerItem({
     required String title,
-    required IconData icon,
+    IconData? icon, // أيقونة اختيارية
+    String? iconText, // رمز نصي اختياري
     required VoidCallback onTap,
   }) {
     return Padding(
@@ -117,7 +122,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
         onTap: onTap,
         child: Row(
           children: [
-            Icon(icon, color: Colors.blue, size: 24),
+            if (icon != null)
+              Icon(
+                icon, // عرض الأيقونة إذا تم تمرير IconData
+                color: Colors.blue,
+                size: 24,
+              )
+            else if (iconText != null)
+              Text(
+                iconText, // عرض النص إذا تم تمرير String
+                style: const TextStyle(fontSize: 24, color: Colors.blue),
+              ),
             const SizedBox(width: 10),
             Text(
               title,
@@ -148,9 +163,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
     } catch (e) {
       // عرض رسالة خطأ في حال فشل تسجيل الخروج
       print("❌ خطأ في تسجيل الخروج: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('فشل تسجيل الخروج: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('فشل تسجيل الخروج: $e')));
     }
   }
 }

@@ -5,30 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e0010132-b3e7-48fc-8348-ef6af576de01" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/PreviousRequestsScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/PreviousRequestsScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/RequestDetailsScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/RequestDetailsScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/School_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/School_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/alert_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/alert_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/authorization_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/authorization_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/StudentSearchScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/StudentSearchScreen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/children_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/children_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/class_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/class_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/exit_permits_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/exit_permits_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/exit_request_details_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/exit_request_details_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/login_employee_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login_employee_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/logout.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/logout.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/modifyAdminScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/modifyAdminScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/registerr_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/registerr_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/request_permission_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/request_permission_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/select_class_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/select_class_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/student_card_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/student_card_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/students_list_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/students_list_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/teacher_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/teacher_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/time_selection_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/time_selection_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
