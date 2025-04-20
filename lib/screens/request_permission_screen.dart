@@ -7,13 +7,11 @@ import 'package:file_picker/file_picker.dart';
 class RequestPermissionScreen extends StatefulWidget {
   final String studentId;
   final String studentName;
-
   const RequestPermissionScreen({
     super.key,
     required this.studentId,
     required this.studentName,
   });
-
   @override
   _RequestPermissionScreenState createState() =>
       _RequestPermissionScreenState();
@@ -88,6 +86,36 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
+                    builder: (BuildContext context, Widget? child) {
+                      return Theme(
+                        data: ThemeData.light().copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: const Color.fromARGB(
+                              255,
+                              11,
+                              40,
+                              66,
+                            ), // تغيير اللون الأساسي إلى الأزرق
+                            onPrimary: const Color.fromARGB(
+                              255,
+                              221,
+                              227,
+                              230,
+                            ), // لون النص عند الضغط
+                            surface: const Color.fromARGB(
+                              255,
+                              230,
+                              232,
+                              234,
+                            ), // لون الخلفية للعنصر المحدد
+                            onSurface: Colors.black, // لون النص الافتراضي
+                          ),
+                          dialogBackgroundColor:
+                              Colors.white, // لون خلفية الحوار
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   if (pickedDate != null) {
                     setState(() {
@@ -113,6 +141,36 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                   final TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
                     initialTime: TimeOfDay.now(),
+                    builder: (BuildContext context, Widget? child) {
+                      return Theme(
+                        data: ThemeData.light().copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: const Color.fromARGB(
+                              255,
+                              17,
+                              34,
+                              49,
+                            ), // تغيير اللون الأساسي إلى الأزرق
+                            onPrimary: const Color.fromARGB(
+                              255,
+                              229,
+                              232,
+                              235,
+                            ), // لون النص عند الضغط
+                            surface: const Color.fromARGB(
+                              255,
+                              232,
+                              234,
+                              236,
+                            ), // لون الخلفية للعنصر المحدد
+                            onSurface: Colors.black, // لون النص الافتراضي
+                          ),
+                          dialogBackgroundColor:
+                              Colors.white, // لون خلفية الحوار
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   if (pickedTime != null) {
                     setState(() {
@@ -177,7 +235,6 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                         final schoolClass =
                             "3"; // استبدل هذه القيمة بالقيمة الفعلية
                         final grade = "$stage/$schoolClass";
-
                         await FirebaseFirestore.instance.collection('excuses').add({
                           'studentId': widget.studentId,
                           'studentName': widget.studentName,
@@ -197,7 +254,6 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
                           'grade': grade, // إضافة الحقل grade مباشرة
                           'status': 'pending', // حالة الطلب (قيد الانتظار)
                         });
-
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("تم إرسال الطلب بنجاح!")),
                         );
@@ -253,9 +309,7 @@ class _RequestPermissionScreenState extends State<RequestPermissionScreen> {
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
-
   CustomTextField({required this.controller, required this.hintText});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -280,9 +334,7 @@ class CustomTextField extends StatelessWidget {
 class CustomButtonAuth extends StatelessWidget {
   final void Function()? onPressed;
   final String title;
-
   const CustomButtonAuth({super.key, this.onPressed, required this.title});
-
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
@@ -299,9 +351,7 @@ class CustomButtonAuth extends StatelessWidget {
 
 class CustomLabel extends StatelessWidget {
   final String text;
-
   CustomLabel({required this.text});
-
   @override
   Widget build(BuildContext context) {
     return Align(

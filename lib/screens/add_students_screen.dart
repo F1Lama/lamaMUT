@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:map/screens/student_card_screen.dart';
-import 'package:map/widgets/custom_button_auth.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 
@@ -17,6 +18,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _guardianIdController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   // القوائم الخاصة بالمرحلة الدراسية والصف
   final List<String> _stages = ['أولى ثانوي', 'ثاني ثانوي', 'ثالث ثانوي'];
@@ -38,15 +40,33 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
     String name = _nameController.text.trim();
     String id = _idController.text.trim();
     String guardianId = _guardianIdController.text.trim();
+    String phone = _phoneController.text.trim();
+
+    // التحقق من صحة الاسم ليكون ثلاثي
+    if (name.split(' ').length < 3) {
+      _showSnackBar('الاسم يجب أن يتكون من ثلاثة أجزاء على الأقل');
+      return;
+    }
+
+    // التحقق من طول رقم الهوية ليكون 10 أرقام
+    if (id.length != 10) {
+      _showSnackBar('رقم الهوية يجب أن يكون 10 أرقام');
+      return;
+    }
+
+    // التحقق من طول رقم الجوال ليكون 10 أرقام
+    if (phone.length != 10) {
+      _showSnackBar('رقم الجوال يجب أن يكون 10 أرقام');
+      return;
+    }
 
     // التحقق من أن جميع الحقول مملوءة
-    if ([name, id, guardianId, _selectedStage, _selectedClass].contains(null) ||
-        [name, id, guardianId].any((e) => e.isEmpty)) {
+    if ([_selectedStage, _selectedClass].contains(null)) {
       _showSnackBar('رجاءً عَبِّ البيانات كاملة');
       return;
     }
 
-    // التحقق من تكرار الطالب
+    // التحقق من عدم وجود طالب بنفس الرقم
     bool isDuplicate = await _isStudentDuplicate(id);
     if (isDuplicate) {
       _showSnackBar('هذا الطالب مسجل مسبقًا');
@@ -69,11 +89,12 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
         'schoolClass': _selectedClass,
         'guardianId': guardianId,
         'guardianEmail': emailFromDb,
+        'phone': phone,
       });
 
       // إنشاء بيانات QR
       _qrData =
-          'Name: $name\nID: $id\nStage: $_selectedStage\nClass: $_selectedClass\nGuardian ID: $guardianId\nEmail: $emailFromDb';
+          'Name: $name\nID: $id\nStage: $_selectedStage\nClass: $_selectedClass\nGuardian ID: $guardianId\nPhone: $phone';
 
       // إرسال بطاقة الطالب عبر البريد الإلكتروني
       await _sendStudentCardEmail(
@@ -83,6 +104,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
         _selectedStage!,
         _selectedClass!,
         guardianId,
+        phone,
       );
 
       // التنقل إلى صفحة عرض بطاقة الطالب
@@ -98,7 +120,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
                 guardianId: guardianId,
                 qrData: _qrData!,
                 guardianEmail: emailFromDb,
-                guardianPhone: '',
+                guardianPhone: phone,
               ),
         ),
       );
@@ -139,40 +161,96 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
     String stage,
     String schoolClass,
     String guardianId,
+    String phone,
   ) async {
     final smtpServer = gmail('8ffaay01@gmail.com', 'vljn jaxv hukr qbct');
     final pdf = pw.Document();
+
+    // تحميل الخط الجديد (Cairo)
+    final customFont = await rootBundle.load(
+      "assets/fonts/Cairo-VariableFont_slnt,wght.ttf",
+    );
+    final ttf = pw.Font.ttf(customFont.buffer.asByteData());
+
+    // تحميل الشعار
+    final logoData = await rootBundle.load('assets/images/logo.png');
+    final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
 
     // إنشاء ملف PDF
     pdf.addPage(
       pw.Page(
         build:
-            (context) => pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  'بطاقة الطالب',
-                  style: pw.TextStyle(
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
+            (context) => pw.Directionality(
+              textDirection: pw.TextDirection.rtl,
+              child: pw.Center(
+                child: pw.Container(
+                  decoration: pw.BoxDecoration(
+                    borderRadius: pw.BorderRadius.circular(16),
+                    color: PdfColor.fromInt(0xFFFFFFFF), // خلفية بيضاء
+                    border: pw.Border.all(
+                      color: PdfColor.fromInt(0xFF0171BD), // اللون الأزرق
+                      width: 2,
+                    ),
+                  ),
+                  padding: pw.EdgeInsets.all(20),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // إضافة الشعار
+                      pw.Center(
+                        child: pw.Image(logoImage, width: 100, height: 50),
+                      ),
+                      pw.SizedBox(height: 16),
+
+                      // العنوان الرئيسي
+                      pw.Center(
+                        child: pw.Text(
+                          'بطاقة الطالب',
+                          style: pw.TextStyle(
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            font: ttf,
+                          ),
+                        ),
+                      ),
+                      pw.SizedBox(height: 16),
+
+                      // معلومات الطالب
+                      pw.Text("الاسم: $name", style: pw.TextStyle(font: ttf)),
+                      pw.Text(
+                        "رقم الهوية: $id",
+                        style: pw.TextStyle(font: ttf),
+                      ),
+                      pw.Text(
+                        "المرحلة: $stage",
+                        style: pw.TextStyle(font: ttf),
+                      ),
+                      pw.Text(
+                        "الصف: $schoolClass",
+                        style: pw.TextStyle(font: ttf),
+                      ),
+                      pw.Text(
+                        "رقم ولي الأمر: $guardianId",
+                        style: pw.TextStyle(font: ttf),
+                      ),
+                      pw.Text(
+                        "رقم الهاتف: $phone",
+                        style: pw.TextStyle(font: ttf),
+                      ),
+                      pw.SizedBox(height: 20),
+
+                      // رمز QR
+                      pw.Text("رمز QR:", style: pw.TextStyle(font: ttf)),
+                      pw.BarcodeWidget(
+                        barcode: pw.Barcode.qrCode(),
+                        data: _qrData!,
+                        width: 100,
+                        height: 100,
+                      ),
+                    ],
                   ),
                 ),
-                pw.SizedBox(height: 16),
-                pw.Text("الاسم: $name"),
-                pw.Text("رقم الهوية: $id"),
-                pw.Text("المرحلة: $stage"),
-                pw.Text("الصف: $schoolClass"),
-                pw.Text("رقم ولي الأمر: $guardianId"),
-                pw.SizedBox(height: 20),
-                pw.Text("رمز QR:"),
-                pw.BarcodeWidget(
-                  barcode: pw.Barcode.qrCode(),
-                  data:
-                      'Name: $name\nID: $id\nStage: $stage\nClass: $schoolClass\nGuardian ID: $guardianId',
-                  width: 100,
-                  height: 100,
-                ),
-              ],
+              ),
             ),
       ),
     );
@@ -188,8 +266,17 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
           ..from = Address('8ffaay01@gmail.com', 'Student App')
           ..recipients.add(email)
           ..subject = 'بطاقة الطالب الخاصة بك'
-          ..text =
-              'مرحبًا $name،\nمرفقة بطاقة الطالب الخاصة بك.\nتحياتنا،\nفريق التطبيق'
+          ..html = '''
+        <html dir="rtl">
+          <body>
+            <p>مرحبًا $name،</p>
+            <p>مرفقة بطاقة الطالب الخاصة بك.</p>
+            <p>رقم هاتفك: $phone</p>
+            <p>تحياتنا،</p>
+            <p>فريق التطبيق</p>
+          </body>
+        </html>
+      '''
           ..attachments = [
             FileAttachment(file)
               ..location = Location.inline
@@ -251,12 +338,28 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
                 Icons.person_outline,
                 isNumber: true,
               ),
+              const SizedBox(height: 10),
+
+              // حقل رقم الهاتف
+              _buildTextField(
+                _phoneController,
+                "رقم الهاتف",
+                Icons.phone,
+                isNumber: true,
+              ),
               const SizedBox(height: 20),
 
               // زر إنشاء بطاقة الطالب
-              CustomButtonAuth(
-                title: 'إنشاء بطاقة الطالب',
+              ElevatedButton(
                 onPressed: _generateQR,
+                child: Text('إنشاء بطاقة الطالب'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _buttonColor,
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ],
           ),
@@ -282,7 +385,6 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: _buttonColor),
         ),
-        hintStyle: TextStyle(color: _textColor),
         filled: true,
         fillColor: _textFieldFillColor,
       ),

@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart'; // استيراد Firebase Core
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map/providers/TeacherProvider.dart';
 import 'package:map/providers/UserProvider.dart';
 import 'package:map/screens/change_location_screen.dart';
+import 'package:map/screens/map_screen.dart';
 import 'package:provider/provider.dart'; // استيراد Provider
 import 'firebase_options.dart'; // استيراد ملف التكوين
 import 'screens/add_admin_screen.dart';
@@ -44,8 +46,10 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginSchoolScreen(), // شاشة تسجيل الدخول
         '/AddAdminScreen': (context) => AddAdminScreen(), // شاشة إضافة مشرف
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
-        '/ChangeLocationScreen':
-            (context) => ChangeLocationScreen(), // شاشة تغيير الموقع
+        '/MapScreen':
+            (context) => MapScreen(
+              schoolLocation: LatLng(30.0444, 31.2357),
+            ), // شاشة تغيير الموقع
       },
     );
   }

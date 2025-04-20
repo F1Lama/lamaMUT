@@ -1,5 +1,3 @@
-// lib/widgets/guardian_custom_drawer.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:map/screens/home_screen.dart';
@@ -27,12 +25,18 @@ class GuardianCustomDrawer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // مسافة صغيرة في الأعلى لتجنب أن يكون الخيار في أعلى الشاشة مباشرةً
+          const SizedBox(height: 20),
+
+          // خيار تسجيل الخروج بعد المسافة الصغيرة
           drawerItem(
             title: "تسجيل خروج",
             icon: Icons.logout,
             onTap: () => _signOut(context),
           ),
-          const SizedBox(height: 20),
+
+          // يمكنك إضافة المزيد من الخيارات هنا إذا كنت بحاجة
+          const SizedBox(height: 10), // مسافة صغيرة بين الخيارات
         ],
       ),
     );

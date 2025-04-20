@@ -5,7 +5,7 @@ import 'package:map/screens/teacher_previous_requests_screen.dart';
 import '../widgets/custom_button.dart'; // استيراد الزر الصحيح
 import '../widgets/custom_drawer.dart';
 import 'exit_permits_screen.dart';
-import 'class_screen.dart' hide CustomButton; // إخفاء الزر المتعارض
+import 'attend_class_screen.dart' hide CustomButton; // إخفاء الزر المتعارض
 
 class AdminScreen extends StatelessWidget {
   @override

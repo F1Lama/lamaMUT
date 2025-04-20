@@ -192,24 +192,28 @@ class AddAdminScreen extends StatelessWidget {
               controller: nameController,
               icon: Icons.person,
               hintText: "اسم الإداري",
+              iconColor: Colors.blue,
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: idController,
               icon: Icons.badge,
               hintText: "رقم الإداري",
+              iconColor: Colors.blue,
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: phoneController,
               icon: Icons.phone,
               hintText: "رقم الهاتف",
+              iconColor: Colors.blue,
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: emailController,
               icon: Icons.email,
               hintText: "البريد الإلكتروني",
+              iconColor: Colors.blue,
             ),
             SizedBox(height: 20),
             CustomButtonAuth(

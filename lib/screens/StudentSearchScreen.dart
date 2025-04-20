@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'student_card_screen.dart'; // استيراد صفحة البطاقة
+import 'package:map/screens/student_card_screen.dart';
 
 class StudentSearchScreen extends StatefulWidget {
   @override

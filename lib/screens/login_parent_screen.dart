@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:map/screens/parent_screen.dart';
+import 'package:map/screens/password_recovery_screen.dart';
 import 'children_screen.dart'; // استيراد شاشة التابعين
-import 'agent_screen.dart'; // استيراد شاشة الموكل
 
 class LoginParentScreen extends StatefulWidget {
   const LoginParentScreen({Key? key}) : super(key: key);
@@ -48,9 +48,9 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
 
       // التحقق من وجود الحساب في أي من المجموعتين
       if (parentQuery.docs.isNotEmpty) {
-        _validateAndNavigate(parentQuery.docs.first, password, isParent: true);
+        _validateAndNavigate(parentQuery.docs.first, password);
       } else if (authorizationQuery.docs.isNotEmpty) {
-        _validateAndNavigate(authorizationQuery.docs.first, password, isParent: false);
+        _validateAndNavigate(authorizationQuery.docs.first, password);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -69,7 +69,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
     }
   }
 
-  void _validateAndNavigate(DocumentSnapshot userDoc, String password, {required bool isParent}) {
+  void _validateAndNavigate(DocumentSnapshot userDoc, String password) {
     var userData = userDoc.data() as Map<String, dynamic>;
     String storedPassword = userData['password'];
 
@@ -91,22 +91,15 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
       ),
     );
 
-    // الحصول على معرف المستخدم
-    String userId = userData['id'];
+    // الحصول على معرف ولي الأمر أو الموكل
+    String guardianId = userData['id'];
 
-    // تحديد الشاشة بناءً على نوع الحساب
-    Widget nextScreen;
-    if (isParent) {
-      // إذا كان الحساب لولي الأمر
-      nextScreen = GuardianScreen(guardianId: userId);
-    } else {
-      // إذا كان الحساب للموكل
-      nextScreen = AgentScreen(agentId: userId);
-    }
-
+    // تحويل إلى صفحة التابعين مع تمرير guardianId
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => nextScreen),
+      MaterialPageRoute(
+        builder: (context) => GuardianScreen(guardianId: guardianId),
+      ),
     );
   }
 
@@ -118,7 +111,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
         backgroundColor: Colors.green,
         elevation: 0,
         title: const Text(
-          "تسجيل دخول ولي الأمر",
+          " تسجيل دخول ولي الأمر والوكيل",
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -143,7 +136,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
               height: 180,
             ),
             const SizedBox(height: 30),
-            _buildInputField(_idController, 'رقم ولي الأمر', Icons.person),
+            _buildInputField(_idController, ' رقم الهوية  ', Icons.person),
             const SizedBox(height: 10),
             _buildInputField(
               _passwordController,
@@ -153,6 +146,8 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
             ),
             const SizedBox(height: 20),
             _buildActionButton('تسجيل دخول', _login),
+            const SizedBox(height: 10),
+            _buildPasswordRecoveryButton(), // زر استعادة كلمة المرور
           ],
         ),
       ),
@@ -178,6 +173,22 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRecoveryButton() {
+    return TextButton(
+      onPressed: () {
+        // الانتقال إلى شاشة استعادة كلمة المرور
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PasswordRecoveryScreen()),
+        );
+      },
+      child: const Text(
+        'استعادة كلمة المرور',
+        style: TextStyle(color: Color.fromARGB(255, 1, 113, 189), fontSize: 16),
       ),
     );
   }

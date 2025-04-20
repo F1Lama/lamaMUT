@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/providers/TeacherProvider.dart';
-import 'package:map/screens/teacher_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:map/screens/admin_screen.dart';
 import 'package:map/screens/home_screen.dart';
+import 'package:map/screens/password_recovery_screen.dart';
+import 'package:map/screens/teacher_screen.dart';
+
 
 class LoginEmployeeScreen extends StatefulWidget {
   const LoginEmployeeScreen({Key? key}) : super(key: key);
@@ -97,20 +97,11 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
       ),
     );
 
-    // تخزين بيانات المستخدم في Provider
-    final teacherProvider = Provider.of<TeacherProvider>(
-      context,
-      listen: false,
-    );
-    if (role == "teacher") {
-      teacherProvider.setTeacherData(userData['id'], userData['name']);
-    }
-
-    // تحديد الصفحة التالية
     Widget nextScreen;
     if (role == "admin") {
       nextScreen = AdminScreen();
     } else {
+      // افترض أن هناك مدة محددة في بيانات المستخدم
       int exitMinutes = userData['exitDuration'] ?? 10; // افتراضياً 10 دقائق
       nextScreen = StudyStageScreen(
         exitDuration: Duration(minutes: exitMinutes),
@@ -120,58 +111,6 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => nextScreen),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        elevation: 0,
-        title: const Text(
-          "تسجيل دخول الموظفين",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.network(
-              'https://i.postimg.cc/DwnKf079/321e9c9d-4d67-4112-a513-d368fc26b0c0.jpg',
-              height: 180,
-            ),
-            const SizedBox(height: 30),
-            _buildInputField(_idController, 'رقم الموظف', Icons.person),
-            const SizedBox(height: 10),
-            _buildInputField(
-              _passwordController,
-              'كلمة المرور',
-              Icons.lock,
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            _buildActionButton('تسجيل دخول', _login),
-          ],
-        ),
-      ),
     );
   }
 
@@ -213,6 +152,77 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
         child: Text(
           label,
           style: const TextStyle(fontSize: 18, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRecoveryButton() {
+    return TextButton(
+      onPressed: () {
+        // الانتقال إلى شاشة استعادة كلمة المرور
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PasswordRecoveryScreen()),
+        );
+      },
+      child: const Text(
+        'استعادة كلمة المرور',
+        style: TextStyle(color: Color.fromARGB(255, 1, 113, 189), fontSize: 16),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        elevation: 0,
+        title: const Text(
+          "تسجيل دخول الموظفين",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // العودة إلى HomeScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.network(
+              'https://i.postimg.cc/DwnKf079/321e9c9d-4d67-4112-a513-d368fc26b0c0.jpg',
+              height: 180,
+            ),
+            const SizedBox(height: 30),
+            _buildInputField(_idController, 'رقم الموظف', Icons.person),
+            const SizedBox(height: 10),
+            _buildInputField(
+              _passwordController,
+              'كلمة المرور',
+              Icons.lock,
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
+            _buildActionButton('تسجيل دخول', _login),
+            const SizedBox(height: 10),
+            _buildPasswordRecoveryButton(), // زر استعادة كلمة المرور
+          ],
         ),
       ),
     );

@@ -22,16 +22,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    // جلب بيانات الطالب
     _studentDataFuture = _fetchStudentData(widget.studentId);
-    // جلب سجل الحضور
     _attendanceRecordsFuture = _fetchAttendanceRecords(widget.studentId);
   }
 
-  // دالة لجلب بيانات الطالب من Firestore
+  // دالة لجلب بيانات الطالب
   Future<Map<String, dynamic>> _fetchStudentData(String studentId) async {
     try {
-      final studentDoc = await FirebaseFirestore.instance.collection('students').doc(studentId).get();
+      final studentDoc =
+          await FirebaseFirestore.instance
+              .collection('students')
+              .doc(studentId)
+              .get();
       if (studentDoc.exists) {
         return studentDoc.data()!;
       } else {
@@ -43,15 +45,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  // دالة لجلب سجل الحضور من Firestore
-  Future<List<Map<String, dynamic>>> _fetchAttendanceRecords(String studentId) async {
+  // دالة لجلب سجل الحضور
+  Future<List<Map<String, dynamic>>> _fetchAttendanceRecords(
+    String studentId,
+  ) async {
     try {
-      final attendanceSnapshot = await FirebaseFirestore.instance
-          .collection('attendance')
-          .where('studentId', isEqualTo: studentId)
-          .orderBy('date', descending: true) // ترتيب السجل حسب التاريخ بشكل تنازلي
-          .get();
-
+      final attendanceSnapshot =
+          await FirebaseFirestore.instance
+              .collection('attendance')
+              .where('studentId', isEqualTo: studentId)
+              .orderBy('date', descending: true)
+              .get();
       return attendanceSnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       print("❌ خطأ أثناء جلب سجل الحضور: $e");
@@ -64,13 +68,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("تسجيل الحضور"),
+        title: const Text("سجل الحضور"),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -82,9 +84,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               future: _studentDataFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError || !snapshot.hasData) {
-                  return Center(child: Text("حدث خطأ أثناء جلب بيانات الطالب"));
+                  return const Center(
+                    child: Text("حدث خطأ أثناء جلب بيانات الطالب"),
+                  );
                 } else {
                   final studentData = snapshot.data!;
                   return Container(
@@ -98,19 +102,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       children: [
                         Text(
                           "معلومات الطالب: ${studentData['name']}",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Text(
                           "الصف: ${studentData['schoolClass']}",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Text(
                           "المرحلة: ${studentData['stage']}",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -119,19 +126,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 }
               },
             ),
-            SizedBox(height: 20),
-
+            const SizedBox(height: 20),
             // عرض سجل الحضور
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
                 future: _attendanceRecordsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError || !snapshot.hasData) {
-                    return Center(child: Text("حدث خطأ أثناء جلب بيانات الحضور"));
+                    return const Center(
+                      child: Text("حدث خطأ أثناء جلب بيانات الحضور"),
+                    );
                   } else if (snapshot.data!.isEmpty) {
-                    return Center(child: Text("لا توجد بيانات حضور متاحة"));
+                    return const Center(
+                      child: Text("لا توجد بيانات حضور متاحة"),
+                    );
                   } else {
                     final attendanceRecords = snapshot.data!;
                     return ListView.builder(
@@ -143,11 +153,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           child: ListTile(
                             title: Text(
                               "التاريخ: ${record['date'] ?? 'غير محدد'}",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             subtitle: Text(
                               "الحالة: ${record['status'] ?? 'غير محدد'}",
-                              style: TextStyle(color: record['status'] == 'حضور' ? Colors.green : Colors.red),
+                              style: TextStyle(
+                                color:
+                                    record['status'] == 'حضور'
+                                        ? Colors.green
+                                        : Colors.red,
+                              ),
                             ),
                           ),
                         );

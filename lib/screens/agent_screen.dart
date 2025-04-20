@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:map/screens/teacher_previous_requests_screen.dart';
-import 'package:map/widgets/guardian_custom_drawer.dart'; // استيراد القائمة الجانبية
-import 'package:map/screens/children_screen.dart';
-import 'package:map/screens/request_permission_screen.dart';
-import 'package:map/screens/authorization_screen.dart';
+import 'package:map/widgets/guardian_custom_drawer.dart';
+import 'AgentChildrenScreen.dart'; // صفحة التابعين
+import 'children_screen.dart'; // صفحة التابعين
 
 class AgentScreen extends StatelessWidget {
   final String agentId; // معرف الوكيل
-
   const AgentScreen({Key? key, required this.agentId}) : super(key: key);
 
   @override
@@ -20,7 +17,7 @@ class AgentScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "الوكيل ",
+          "الوكيل",
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -29,42 +26,35 @@ class AgentScreen extends StatelessWidget {
         ),
         actions: [
           Builder(
-            builder:
-                (context) => IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () {
-                    Scaffold.of(
-                      context,
-                    ).openEndDrawer(); // فتح القائمة الجانبية من الجهة اليمنى
-                  },
-                ),
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer(); // فتح القائمة الجانبية من الجهة اليمنى
+              },
+            ),
           ),
         ],
       ),
-      endDrawer:
-          GuardianCustomDrawer(), // استخدام القائمة الجانبية من الجهة اليمنى
+      endDrawer: GuardianCustomDrawer(), // استخدام القائمة الجانبية من الجهة اليمنى
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // زر طلب النداء
             CustomButton(
               title: "طلب نداء",
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => ChildrenScreen(
-                          guardianId: agentId, // تمرير معرف الوكيل
-                          serviceType:
-                              "call_request", // نوع الخدمة (طلب النداء)
-                        ),
+                    builder: (context) =>
+                        AgentChildrenScreen(agentId: agentId), // استخدام agentId هنا
                   ),
                 );
               },
             ),
-            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -76,22 +66,28 @@ class AgentScreen extends StatelessWidget {
 class CustomButton extends StatelessWidget {
   final String title;
   final void Function()? onPressed;
-
   const CustomButton({super.key, required this.title, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: MaterialButton(
-        height: 50,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        color: const Color.fromARGB(255, 1, 113, 189),
-        textColor: Colors.white,
+      height: 60,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 1, 113, 189),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
         onPressed: onPressed,
         child: Text(
           title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
     );

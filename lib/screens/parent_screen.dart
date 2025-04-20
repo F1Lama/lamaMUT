@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/screens/multi_select_children_screen.dart';
 import 'package:map/screens/teacher_previous_requests_screen.dart';
 import 'package:map/widgets/guardian_custom_drawer.dart'; // استيراد القائمة الجانبية
 import 'package:map/screens/children_screen.dart';
@@ -99,22 +100,19 @@ class GuardianScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 10),
-            CustomButton(
-              title: "توكيل",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => ChildrenScreen(
-                          guardianId: guardianId,
-                          serviceType:
-                              "delegation", // تحديد نوع الخدمة (طلب النداء)
-                        ),
-                  ),
-                );
-              },
-            ),
+    CustomButton(
+  title: "توكيل",
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AuthorizationScreen(
+          guardianId: guardianId, // تمرير معرف ولي الأمر
+        ),
+      ),
+    );
+  },
+),
             const SizedBox(height: 10),
             CustomButton(
               title: "الطلبات السابقة",

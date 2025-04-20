@@ -13,6 +13,8 @@ import 'dart:typed_data';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
+import '../screens/attached excuses.dart';
+
 class CustomDrawer extends StatefulWidget {
   @override
   _CustomDrawerState createState() => _CustomDrawerState();
@@ -72,7 +74,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
             title: "الأعذار المرفقة",
             icon: Icons.attachment,
             onTap: () {
-              print("📎 تم الضغط على الأعذار المرفقة");
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AttachedExcuses()),
+              );
             },
           ),
           drawerItem(

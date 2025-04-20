@@ -1,7 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:map/screens/School_screen.dart';
 import 'package:map/screens/registerr_screen.dart';
+import 'package:map/screens/school_password_recovery_screen.dart';
+
 
 class LoginSchoolScreen extends StatefulWidget {
   const LoginSchoolScreen({Key? key}) : super(key: key);
@@ -43,10 +46,8 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
       String errorMessage = '';
       if (e.code == 'user-not-found') {
         errorMessage = "الحساب غير مسجل.";
-      } else if (e.code == 'wrong-password') {
-        errorMessage = "كلمة المرور خاطئة.";
-      } else if (e.code == 'invalid-email') {
-        errorMessage = "البريد الإلكتروني غير صحيح.";
+      } else if (e.code == 'wrong-password' || e.code == 'invalid-email') {
+        errorMessage = "البيانات المدخلة غير صحيحة.";
       } else {
         errorMessage = "حدث خطأ: ${e.message}";
       }
@@ -54,14 +55,6 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
       // عرض رسالة الخطأ باستخدام SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
-      );
-    } catch (e) {
-      // عرض رسالة خطأ عامة في حالة حدوث خطأ غير متوقع
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("حدث خطأ غير متوقع: $e"),
-          backgroundColor: Colors.red,
-        ),
       );
     }
   }
@@ -114,6 +107,9 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
             ),
             const SizedBox(height: 20),
             _buildActionButton('تسجيل دخول', _login),
+            const SizedBox(height: 10),
+            _buildPasswordRecoveryButton(), // زر استعادة كلمة المرور
+
             const SizedBox(height: 20),
             const Text('إنشاء حساب جديد', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 5),
@@ -148,6 +144,24 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRecoveryButton() {
+    return TextButton(
+      onPressed: () {
+        // الانتقال إلى شاشة استعادة كلمة المرور
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SchoolPasswordRecoveryScreen(),
+          ),
+        );
+      },
+      child: const Text(
+        'استعادة كلمة المرور',
+        style: TextStyle(color: Color.fromARGB(255, 1, 113, 189), fontSize: 16),
       ),
     );
   }
