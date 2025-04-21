@@ -6,8 +6,6 @@ import 'package:mailer/smtp_server.dart';
 import 'package:map/widgets/custom_button_auth.dart';
 import 'package:map/widgets/custom_text_field.dart';
 
-
-
 class AddTeacherScreen extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController idController = TextEditingController();
@@ -15,6 +13,8 @@ class AddTeacherScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController specialtyController = TextEditingController();
 
+  // تعريف الألوان المستخدمة
+  final Color _iconColor = const Color(0xFF007AFF); // أزرق مشابه للون iOS الافتراضي
   final String senderEmail = "8ffaay01@gmail.com";
   final String senderPassword = "urwn frcb fzug ucyz"; // App Password
 
@@ -256,30 +256,35 @@ class AddTeacherScreen extends StatelessWidget {
               controller: nameController,
               icon: Icons.person,
               hintText: "اسم المعلم",
+              iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: idController,
               icon: Icons.badge,
               hintText: "رقم المعلم",
+              iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: phoneController,
               icon: Icons.phone,
               hintText: "رقم الهاتف",
+              iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: emailController,
               icon: Icons.email,
               hintText: "البريد الإلكتروني",
+              iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 15),
             CustomTextField(
               controller: specialtyController,
               icon: Icons.school,
               hintText: "التخصص",
+              iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 20),
             CustomButtonAuth(

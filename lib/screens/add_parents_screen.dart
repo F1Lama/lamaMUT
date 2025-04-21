@@ -9,16 +9,17 @@ class AddParentsScreen extends StatelessWidget {
   final String senderEmail = "8ffaay01@gmail.com"; // ✉️ بريد المرسل
   final String senderPassword = "vljn jaxv hukr qbct"; // 🔑 كلمة مرور التطبيق
 
-  // ✅ تعريف المتحكمات
+  // تعريف المتحكمات
   final TextEditingController nameController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
   // تعديل الألوان الرئيسية
-  final Color _buttonColor = Color(
-    0xFF4CAF50,
-  ); // أخضر داكن (Material Design Green)
+  final Color _iconColor = const Color(
+    0xFF007AFF,
+  ); // أزرق مشابه للون iOS الافتراضي
+  final Color _buttonColor = const Color(0xFF007AFF); // نفس اللون الأزرق للزر
   final Color _textFieldFillColor =
       Colors.grey[100]!; // رمادي فاتح جدًا للخلفية
   final Color _textColor = Colors.black87; // نص أسود داكن (أكثر وضوحًا)
@@ -28,19 +29,22 @@ class AddParentsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white, // خلفية بيضاء
       appBar: AppBar(
-        backgroundColor: _buttonColor, // نفس لون الزر
+        backgroundColor: _buttonColor, // لون الشريط العلوي أصبح أزرق
         elevation: 0,
         centerTitle: true,
         title: const Text(
           "إضافة أولياء الأمور",
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.white, // نص أبيض
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ), // أيقونة الرجوع بيضاء
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -50,29 +54,29 @@ class AddParentsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildTextField(nameController, "اسم ولي الأمر", Icons.person),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildTextField(
                 idController,
                 "رقم الهوية",
                 Icons.credit_card,
                 isNumber: true,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildTextField(
                 phoneController,
                 "الهاتف",
                 Icons.phone,
                 isNumber: true,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildTextField(
                 emailController,
                 "البريد الإلكتروني",
                 Icons.email,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
@@ -88,7 +92,7 @@ class AddParentsScreen extends StatelessWidget {
                         phone.isEmpty ||
                         email.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text("جميع الحقول مطلوبة لإكمال العملية"),
                         ),
                       );
@@ -125,14 +129,14 @@ class AddParentsScreen extends StatelessWidget {
                     await sendEmail(email, parentName, parentId, password);
 
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text(
                           "تمت إضافة ولي الأمر وتم إرسال البريد بنجاح!",
                         ),
                       ),
                     );
                   },
-                  child: Text(
+                  child: const Text(
                     'إضافة ولي الأمر',
                     style: TextStyle(
                       color: Colors.white, // نص أبيض على الزر
@@ -141,8 +145,10 @@ class AddParentsScreen extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _buttonColor, // لون الخلفية الأخضر الداكن
-                    padding: EdgeInsets.symmetric(vertical: 15), // ارتفاع الزر
+                    backgroundColor: _buttonColor, // لون الخلفية الأزرق
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                    ), // ارتفاع الزر
                     minimumSize: Size(
                       MediaQuery.of(context).size.width / 2,
                       50,
@@ -165,18 +171,21 @@ class AddParentsScreen extends StatelessWidget {
     var querySnapshot =
         await firestore.collection('parents').where('id', isEqualTo: id).get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     querySnapshot =
         await firestore
             .collection('parents')
             .where('email', isEqualTo: email)
             .get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     querySnapshot =
         await firestore
             .collection('parents')
             .where('phone', isEqualTo: phone)
             .get();
     if (querySnapshot.docs.isNotEmpty) return true;
+
     return false;
   }
 
@@ -201,6 +210,7 @@ class AddParentsScreen extends StatelessWidget {
               "كلمة المرور: $password\n"
               "يرجى تغيير كلمة المرور بعد تسجيل الدخول.\n"
               "تحياتنا، فريق متابع.";
+
     try {
       await send(message, smtpServer);
       print("📩 تم إرسال البريد الإلكتروني بنجاح إلى $recipientEmail");
@@ -287,14 +297,16 @@ class AddParentsScreen extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.black54), // لون العنوان (أسود باهت)
+        labelStyle: const TextStyle(
+          color: Colors.black54,
+        ), // لون العنوان (أسود باهت)
         border: OutlineInputBorder(),
-        prefixIcon: Icon(icon, color: _buttonColor), // أيقونة بنفس لون الزر
+        prefixIcon: Icon(icon, color: _iconColor), // أيقونة باللون الأزرق
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: _buttonColor), // حدود عند التركيز
+          borderSide: BorderSide(color: _iconColor), // حدود عند التركيز
         ),
-        hintStyle: TextStyle(
-          color: Colors.grey[600], // نص تلميح رمادي
+        hintStyle: const TextStyle(
+          color: Colors.grey, // نص تلميح رمادي
         ),
         filled: true,
         fillColor: _textFieldFillColor, // خلفية الحقل (رمادي فاتح)

@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:map/screens/School_screen.dart';
 import 'package:map/screens/registerr_screen.dart';
 import 'package:map/screens/school_password_recovery_screen.dart';
-
 
 class LoginSchoolScreen extends StatefulWidget {
   const LoginSchoolScreen({Key? key}) : super(key: key);
@@ -46,15 +44,49 @@ class _LoginSchoolScreenState extends State<LoginSchoolScreen> {
       String errorMessage = '';
       if (e.code == 'user-not-found') {
         errorMessage = "الحساب غير مسجل.";
-      } else if (e.code == 'wrong-password' || e.code == 'invalid-email') {
-        errorMessage = "البيانات المدخلة غير صحيحة.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "كلمة المرور غير صحيحه";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'البريد الالكتروني غير صحيح.';
       } else {
-        errorMessage = "حدث خطأ: ${e.message}";
+        errorMessage = "حدث خطأ";
       }
 
       // عرض رسالة الخطأ باستخدام SnackBar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text(
+                'خطأ',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              content: Text(
+                errorMessage,
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              actionsAlignment: MainAxisAlignment.center,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'حسنًا',
+                    style: TextStyle(color: Colors.blue, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
       );
     }
   }

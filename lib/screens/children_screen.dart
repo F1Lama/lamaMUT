@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:map/screens/attendence_screen.dart';
 import 'package:map/screens/authorization_screen.dart';
 import 'package:map/screens/call_screen.dart';
-import 'package:map/screens/gardian_attendance_screen.dart';
 import 'request_permission_screen.dart'; // صفحة طلب الاستئذان
+
 class ChildrenScreen extends StatefulWidget {
   final String guardianId; // معرف ولي الأمر المسجل
-  final String serviceType; // نوع الخدمة المختارة (مثل "الحضور" أو "طلب الاستئذان")
+  final String
+  serviceType; // نوع الخدمة المختارة (مثل "الحضور" أو "طلب الاستئذان")
 
   const ChildrenScreen({
     Key? key,
@@ -29,13 +31,18 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
     _studentsFuture = _fetchStudentsByGuardianId(widget.guardianId);
   }
 
-  Future<List<Map<String, dynamic>>> _fetchStudentsByGuardianId(String guardianId) async {
+  Future<List<Map<String, dynamic>>> _fetchStudentsByGuardianId(
+    String guardianId,
+  ) async {
     List<Map<String, dynamic>> students = [];
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('students')
-          .where('guardianId', isEqualTo: guardianId)
-          .get();
+      // البحث مباشرة في المجموعة students
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('students')
+              .where('guardianId', isEqualTo: guardianId)
+              .get();
+
       for (var doc in querySnapshot.docs) {
         students.add({
           "id": doc['id'],
@@ -54,9 +61,9 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
   void _navigateToServiceScreen(List<Map<String, dynamic>> students) {
     // التحقق من أن طالبًا واحدًا قد تم اختياره
     if (_selectedStudentId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("يرجى اختيار طالب واحد")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("يرجى اختيار طالب واحد")));
       return;
     }
 
@@ -71,24 +78,42 @@ class _ChildrenScreenState extends State<ChildrenScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AttendanceScreen(
-              studentId: selectedStudent["id"], // تمرير معرف الطالب
-              guardianId: widget.guardianId, // تمرير معرف ولي الأمر
-            ),
+            builder:
+                (context) => AttendanceScreen(
+                  studentId: selectedStudent["id"], // تمرير معرف الطالب
+                  guardianId: widget.guardianId, // تمرير معرف ولي الأمر
+                ),
           ),
         );
         break;
+
       case "permission": // إذا كانت الخدمة هي "طلب الاستئذان"
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RequestPermissionScreen(
-              studentId: selectedStudent["id"],
-              studentName: selectedStudent["name"], // اسم الطالب
-            ),
+            builder:
+                (context) => RequestPermissionScreen(
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
+                ),
           ),
         );
         break;
+
+
+      case "call_request": // إذا كانت الخدمة هي "طلب النداء"
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => RequestHelpScreen(
+                  studentId: selectedStudent["id"],
+                  studentName: selectedStudent["name"], // اسم الطالب
+                ),
+          ),
+        );
+        break;
+
       default:
         print("خدمة غير معروفة");
     }

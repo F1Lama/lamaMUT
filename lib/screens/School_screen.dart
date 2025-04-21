@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:map/screens/requests_list_screen.dart';
 import 'package:map/widgets/custom_button_auth.dart';
 
-import 'map_screen.dart';
+
 
 class SchoolScreen extends StatelessWidget {
   final String schoolName;
@@ -85,13 +85,18 @@ class SchoolScreen extends StatelessWidget {
                   CustomButtonAuth(
                     title: "تغيير موقع المدرسة",
                     onPressed: () {
+                      Navigator.pushNamed(context, '/MapScreen');
+                    },
+                  ),
+                  const SizedBox(height: 35),
+                  // زر جديد لعرض طلبات النداء
+                  CustomButtonAuth(
+                    title: "طلبات النداء",
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (context) => MapScreen(
-                                schoolLocation: LatLng(30.0444, 31.2357),
-                              ), // إضافة الموقع الأساسي للمدرسة هنا
+                          builder: (context) => RequestsListScreen(),
                         ),
                       );
                     },

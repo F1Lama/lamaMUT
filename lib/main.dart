@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map/providers/TeacherProvider.dart';
 import 'package:map/providers/UserProvider.dart';
 import 'package:map/screens/change_location_screen.dart';
+import 'package:map/screens/map_picker_screen.dart';
 import 'package:map/screens/map_screen.dart';
 import 'package:provider/provider.dart'; // استيراد Provider
 import 'firebase_options.dart'; // استيراد ملف التكوين
@@ -46,10 +47,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginSchoolScreen(), // شاشة تسجيل الدخول
         '/AddAdminScreen': (context) => AddAdminScreen(), // شاشة إضافة مشرف
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
-        '/MapScreen':
-            (context) => MapScreen(
-              schoolLocation: LatLng(30.0444, 31.2357),
-            ), // شاشة تغيير الموقع
+             '/MapScreen': (context) => MapScreen(), // إذا كنت تستخدم شاشة الخريطة
+        '/map_picker': (context) => MapPickerScreen(),
       },
     );
   }
