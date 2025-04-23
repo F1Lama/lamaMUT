@@ -19,7 +19,7 @@ class _MapScreenState extends State<MapScreen> {
       final schoolRef = FirebaseFirestore.instance
           .collection('schools')
           .doc(
-            '4U1JDQRkOXQ1WWSwAwvWn6EY41X2',
+            'FirebaseAuth.instance.currentUser!.uid',
           ); // استبدل "schoolID" بمعرف المدرسة الخاص بك
 
       // تحديث الموقع في قاعدة البيانات

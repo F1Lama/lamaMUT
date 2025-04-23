@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -26,6 +28,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? selectedStage;
   final List<String> schoolStages = ['ابتدائي', 'متوسط', 'ثانوي'];
 
+  // بيانات المرسل
+  final String senderEmail = "8ffaay01@gmail.com"; // ✉️ بريد المرسل
+  final String senderPassword = "vljn jaxv hukr qbct"; // 🔑 كلمة مرور التطبيق
+
   Future<LatLng?> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -34,7 +40,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ).showSnackBar(const SnackBar(content: Text('خدمة الموقع غير مفعلة')));
       return null;
     }
-
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -45,16 +50,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return null;
       }
     }
-
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('صلاحية الموقع مرفوضة نهائيًا')),
       );
       return null;
     }
-
     final position = await Geolocator.getCurrentPosition();
     return LatLng(position.latitude, position.longitude);
+  }
+
+  // ✅ دالة إرسال البريد الإلكتروني
+  Future<void> sendConfirmationEmail(
+    String recipientEmail,
+    String schoolName,
+  ) async {
+    final smtpServer = gmail(senderEmail, senderPassword);
+
+    final message =
+        Message()
+          ..from = Address(senderEmail, "Mutabie App")
+          ..recipients.add(recipientEmail)
+          ..subject = "تأكيد إنشاء حساب المدرسة"
+          ..text =
+              "مرحبًا،\n\n"
+              "تهانينا! تم إنشاء حساب المدرسة '$schoolName' بنجاح.\n\n"
+              "يمكنك الآن تسجيل الدخول واستخدام النظام.\n\n"
+              "تحياتنا، فريق متابع.";
+
+    try {
+      await send(message, smtpServer);
+      print("📩 تم إرسال البريد الإلكتروني بنجاح إلى $recipientEmail");
+    } catch (e) {
+      print("❌ خطأ في إرسال البريد: $e");
+    }
   }
 
   Future<void> registerSchool() async {
@@ -91,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // التحقق من كلمة المرور
     String passwordPattern =
-        r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#\$&\.])[A-Za-z\d!@#\$&\.]{8,}$';
+        r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&\.]).{8,}$';
     RegExp regExp = RegExp(passwordPattern);
     if (password.isEmpty || !regExp.hasMatch(password)) {
       _showErrorDialog(
@@ -113,9 +142,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       double? latitude;
       double? longitude;
-
       try {
-        List<Location> locations = await locationFromAddress(schoolLocation);
+        var locations = await locationFromAddress(schoolLocation);
         if (locations.isNotEmpty) {
           latitude = locations.first.latitude;
           longitude = locations.first.longitude;
@@ -137,9 +165,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'createdAt': DateTime.now(),
           });
 
+      // ✅ إرسال البريد الإلكتروني بعد إنشاء الحساب
+      await sendConfirmationEmail(email, schoolName);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('تم إنشاء الحساب وتخزين البيانات بنجاح!')),
       );
+
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       String errorMessage = '';
@@ -350,9 +382,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       items:
-          items.map((String item) {
-            return DropdownMenuItem<String>(value: item, child: Text(item));
-          }).toList(),
+          items
+              .map(
+                (String item) =>
+                    DropdownMenuItem<String>(value: item, child: Text(item)),
+              )
+              .toList(),
       onChanged: onChanged,
     );
   }

@@ -13,6 +13,9 @@ class RequestsListScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.green,
         centerTitle: true,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ), // تغيير لون السهم إلى الأبيض
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream:

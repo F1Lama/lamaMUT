@@ -30,11 +30,18 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
   Future<void> fetchStudents() async {
     try {
       // استعلام Firestore للحصول على بيانات الطلاب
-      final studentSnapshot = await firestore
-          .collection('students') // المجموعة الجديدة
-          .where('stage', isEqualTo: widget.stage.trim()) // تصفية بناءً على المرحلة
-          .where('schoolClass', isEqualTo: widget.schoolClass.trim()) // تصفية بناءً على الصف
-          .get();
+      final studentSnapshot =
+          await firestore
+              .collection('students') // المجموعة الجديدة
+              .where(
+                'stage',
+                isEqualTo: widget.stage.trim(),
+              ) // تصفية بناءً على المرحلة
+              .where(
+                'schoolClass',
+                isEqualTo: widget.schoolClass.trim(),
+              ) // تصفية بناءً على الصف
+              .get();
 
       // طباعة المستندات المسترجعة للتحقق
       print(
@@ -43,7 +50,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
 
       if (mounted) {
         setState(() {
-          // التحقق من وجود الحقل `name` في كل مستند
+          // التحقق من وجود الحقل name في كل مستند
           students = Map.fromEntries(
             studentSnapshot.docs
                 .where((doc) => doc.data().containsKey('name'))
@@ -83,82 +90,93 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
           },
         ),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator()) // عرض مؤشر التحميل
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: students.isEmpty
-                        ? Center(child: Text("لم يتم العثور على طلاب"))
-                        : ListView(
-                            children: students.keys.map((String key) {
-                              return CheckboxListTile(
-                                title: Text(
-                                  key,
-                                  textAlign: TextAlign.right,
+      body:
+          isLoading
+              ? Center(child: CircularProgressIndicator()) // عرض مؤشر التحميل
+              : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child:
+                          students.isEmpty
+                              ? Center(child: Text("لم يتم العثور على طلاب"))
+                              : ListView(
+                                children:
+                                    students.keys.map((String key) {
+                                      return CheckboxListTile(
+                                        title: Text(
+                                          key,
+                                          textAlign: TextAlign.right,
+                                        ),
+                                        value: students[key],
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            // إعادة تعيين جميع الخيارات
+                                            students.updateAll(
+                                              (key, _) => false,
+                                            );
+                                            // تحديد الطالب الجديد
+                                            students[key] = value!;
+                                            // تخزين اسم الطالب المحدد
+                                            selectedStudent =
+                                                students[key] == true
+                                                    ? key
+                                                    : null;
+                                          });
+                                        },
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      );
+                                    }).toList(),
+                              ),
+                    ),
+                    MaterialButton(
+                      onPressed: () async {
+                        // التحقق مما إذا تم اختيار طالب واحد على الأقل
+                        if (selectedStudent == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("يرجى اختيار طالب واحد على الأقل"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // الانتقال إلى صفحة تحديد الوقت
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => TimeSelectionScreen(
+                                  studentName: selectedStudent!,
+                                  grade:
+                                      "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
+                                  teacherName:
+                                      teacherName, // اسم المعلمة من الجلسة
                                 ),
-                                value: students[key],
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    // إعادة تعيين جميع الخيارات
-                                    students.updateAll((key, _) => false);
-                                    // تحديد الطالب الجديد
-                                    students[key] = value!;
-                                    // تخزين اسم الطالب المحدد
-                                    selectedStudent =
-                                        students[key] == true ? key : null;
-                                  });
-                                },
-                                controlAffinity: ListTileControlAffinity.leading,
-                              );
-                            }).toList(),
-                          ),
-                  ),
-                  MaterialButton(
-                    onPressed: () async {
-                      // التحقق مما إذا تم اختيار طالب واحد على الأقل
-                      if (selectedStudent == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("يرجى اختيار طالب واحد على الأقل"),
-                            backgroundColor: Colors.red,
                           ),
                         );
-                        return;
-                      }
 
-                      // الانتقال إلى صفحة تحديد الوقت
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TimeSelectionScreen(
-                            studentName: selectedStudent!,
-                            grade: "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
-                            teacherName: teacherName, // اسم المعلمة من الجلسة
-                          ),
-                        ),
-                      );
-
-                      // إعادة تعيين الطالب المحدد بعد العودة
-                      setState(() {
-                        students[selectedStudent!] = false;
-                        selectedStudent = null;
-                      });
-                    },
-                    color: Color.fromARGB(255, 1, 113, 189),
-                    textColor: Colors.white,
-                    child: Text("موافق"),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                        // إعادة تعيين الطالب المحدد بعد العودة
+                        setState(() {
+                          students[selectedStudent!] = false;
+                          selectedStudent = null;
+                        });
+                      },
+                      color: Color.fromARGB(255, 1, 113, 189),
+                      textColor: Colors.white,
+                      child: Text("موافق"),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      height: 50,
+                      minWidth: double.infinity,
                     ),
-                    height: 50,
-                    minWidth: double.infinity,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
     );
   }
 }

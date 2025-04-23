@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddParentsScreen extends StatelessWidget {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -19,7 +20,7 @@ class AddParentsScreen extends StatelessWidget {
   final Color _iconColor = const Color(
     0xFF007AFF,
   ); // أزرق مشابه للون iOS الافتراضي
-  final Color _buttonColor = const Color(0xFF007AFF); // نفس اللون الأزرق للزر
+  final Color _buttonColor = Colors.green; // اللون الأخضر للزر
   final Color _textFieldFillColor =
       Colors.grey[100]!; // رمادي فاتح جدًا للخلفية
   final Color _textColor = Colors.black87; // نص أسود داكن (أكثر وضوحًا)
@@ -29,7 +30,7 @@ class AddParentsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white, // خلفية بيضاء
       appBar: AppBar(
-        backgroundColor: _buttonColor, // لون الشريط العلوي أصبح أزرق
+        backgroundColor: _buttonColor, // لون الشريط العلوي أصبح أخضر
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -99,15 +100,69 @@ class AddParentsScreen extends StatelessWidget {
                       return;
                     }
 
+                    // التحقق من صيغة اسم ولي الأمر (لا يقل عن ثلاث كلمات)
+                    if (parentName.split(' ').length < 3) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "اسم ولي الأمر يجب أن يكون ثلاثيًا على الأقل.",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // التحقق من رقم الهاتف (يبدأ بـ 05 ويتكون من 10 أرقام)
+                    if (!phone.startsWith('05') || phone.length != 10) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "رقم الهاتف يجب أن يبدأ بـ 05 ويكون 10 أرقام.",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // التحقق من صيغة البريد الإلكتروني
+                    final emailRegex = RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    );
+                    if (!emailRegex.hasMatch(email)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("صيغة البريد الإلكتروني غير صحيحة."),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // التحقق من أن رقم الهوية يتكون من 10 أرقام فقط
+                    if (parentId.length != 10 ||
+                        !RegExp(r'^\d{10}$').hasMatch(parentId)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "رقم الهوية يجب أن يتكون من 10 أرقام فقط.",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // التحقق من عدم تكرار بيانات ولي الأمر
                     bool isDuplicate = await isParentDuplicate(
                       parentId,
                       email,
                       phone,
                     );
-
                     if (isDuplicate) {
-                      print(
-                        "⚠️ ولي الأمر $parentName مسجل مسبقًا، لم يتم إضافته.",
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "رقم الهوية أو البريد الإلكتروني أو الهاتف مسجل مسبقًا.",
+                          ),
+                        ),
                       );
                       return;
                     }
@@ -122,12 +177,15 @@ class AddParentsScreen extends StatelessWidget {
                       'phone': phone,
                       'email': email,
                       'password': password,
+                      'role': 'parent',
+                      'schoolId': FirebaseAuth.instance.currentUser!.uid,
                       'createdAt': Timestamp.now(),
                     });
 
                     // إرسال البريد الإلكتروني
                     await sendEmail(email, parentName, parentId, password);
 
+                    // إظهار رسالة نجاح
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -145,7 +203,7 @@ class AddParentsScreen extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _buttonColor, // لون الخلفية الأزرق
+                    backgroundColor: _buttonColor, // لون الخلفية الأخضر
                     padding: const EdgeInsets.symmetric(
                       vertical: 15,
                     ), // ارتفاع الزر
@@ -203,12 +261,12 @@ class AddParentsScreen extends StatelessWidget {
           ..recipients.add(recipientEmail)
           ..subject = "تفاصيل حسابك كولي أمر"
           ..text =
-              "مرحبًا $name،\n"
-              "تم تسجيلك بنجاح في تطبيق متابع.\n"
+              "مرحبًا $name،\n\n"
+              "تم تسجيلك بنجاح في تطبيق متابع.\n\n"
               "بيانات تسجيل الدخول الخاصة بك:\n"
               "رقم ولي الأمر: $parentId\n"
-              "كلمة المرور: $password\n"
-              "يرجى تغيير كلمة المرور بعد تسجيل الدخول.\n"
+              "كلمة المرور: $password\n\n"
+              "يرجى تغيير كلمة المرور بعد تسجيل الدخول.\n\n"
               "تحياتنا، فريق متابع.";
 
     try {

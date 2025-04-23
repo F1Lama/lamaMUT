@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final TextStyle? textStyle; // نمط النص
   final Color? fillColor; // لون الخلفية
   final Color? iconColor; // لون الأيقونة
+  final bool enabled; // معلمة جديدة لتحديد إذا كان الحقل قابلاً للتعديل
 
   const CustomTextField({
     required this.controller,
@@ -17,6 +18,8 @@ class CustomTextField extends StatelessWidget {
     this.textStyle, // بدون قيمة افتراضية
     this.fillColor, // بدون قيمة افتراضية
     this.iconColor, // بدون قيمة افتراضية
+    this.enabled =
+        true, // القيمة الافتراضية هي true (الحقل قابل للتعديل بشكل افتراضي)
   });
 
   @override
@@ -24,9 +27,13 @@ class CustomTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText, // استخدام الخيار لإخفاء النص
+      enabled: enabled, // تمرير المعلمة إلى TextField
       style: textStyle, // تطبيق نمط النص إذا تم توفيره
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: iconColor ?? Colors.indigo), // لون الأيقونة
+        prefixIcon: Icon(
+          icon,
+          color: iconColor ?? Colors.indigo,
+        ), // لون الأيقونة
         hintText: hintText,
         hintStyle: textStyle, // تطبيق نفس نمط النص على النص التوضيحي
         filled: true,

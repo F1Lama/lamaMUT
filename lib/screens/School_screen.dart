@@ -11,7 +11,7 @@ class SchoolScreen extends StatelessWidget {
 
   void _logout(BuildContext context) {
     print("تم تسجيل الخروج بنجاح");
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override

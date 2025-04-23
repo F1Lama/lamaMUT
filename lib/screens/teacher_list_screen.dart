@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:map/widgets/custom_button_auth.dart';
 import 'package:map/widgets/custom_text_field.dart';
 
-class AdminListScreen extends StatefulWidget {
+
+import '../widgets/custom_button_auth.dart';
+
+class TeacherListScreen extends StatefulWidget {
   @override
-  _AdminListScreenState createState() => _AdminListScreenState();
+  _ATeacherListScreen createState() => _ATeacherListScreen();
 }
 
-class _AdminListScreenState extends State<AdminListScreen> {
+class _ATeacherListScreen extends State<TeacherListScreen> {
   Map<String, bool> selectedAdmins = {}; // الإداريين المحددين
 
   @override
@@ -18,7 +20,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("الإداريين", style: TextStyle(color: Colors.white)),
+        title: Text("المعلمين", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -30,7 +32,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
       body: StreamBuilder<QuerySnapshot>(
         stream:
             FirebaseFirestore.instance
-                .collection('admins')
+                .collection('teachers')
                 .where(
                   'schoolId',
                   isEqualTo: FirebaseAuth.instance.currentUser!.uid,
@@ -41,7 +43,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
             return Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text("لا يوجد إداريين"));
+            return Center(child: Text("لا يوجد معلمين"));
           }
 
           final admins = snapshot.data!.docs;
@@ -130,7 +132,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
 
     if (selectedIds.isEmpty || selectedIds.length > 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("يرجى اختيار إداري واحد فقط للتعديل")),
+        SnackBar(content: Text("يرجى اختيار معلم واحد فقط للتعديل")),
       );
       return;
     }
@@ -140,7 +142,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
     try {
       DocumentSnapshot doc =
           await FirebaseFirestore.instance
-              .collection('admins')
+              .collection('teachers')
               .doc(selectedId)
               .get();
 
@@ -159,7 +161,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
     try {
       final querySnapshot =
           await FirebaseFirestore.instance
-              .collection('admins')
+              .collection('teachers')
               .where('phone', isEqualTo: phone)
               .get();
 
@@ -176,7 +178,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
     try {
       final querySnapshot =
           await FirebaseFirestore.instance
-              .collection('admins')
+              .collection('teachers')
               .where('email', isEqualTo: email)
               .get();
 
@@ -213,7 +215,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
         return AlertDialog(
           title: Center(
             child: Text(
-              "تعديل بيانات الإداري",
+              "تعديل بيانات المعلم",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
@@ -223,13 +225,13 @@ class _AdminListScreenState extends State<AdminListScreen> {
               CustomTextField(
                 controller: nameController,
                 icon: Icons.person,
-                hintText: "اسم الإداري",
+                hintText: "اسم المعلم",
                 iconColor: Colors.blue,
               ),
               CustomTextField(
                 controller: idController,
                 icon: Icons.badge,
-                hintText: "رقم الإداري",
+                hintText: "رقم المعلم",
                 iconColor: Colors.blue,
                 enabled: false, // جعل الحقل غير قابل للتعديل
               ),
@@ -334,7 +336,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
 
                       // تحديث البيانات في Firestore
                       await FirebaseFirestore.instance
-                          .collection('admins')
+                          .collection('teachers')
                           .doc(adminId)
                           .update({
                             'name': nameController.text.trim(),
@@ -365,7 +367,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
 
     if (selectedIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("يرجى اختيار إداري واحد على الأقل للحذف")),
+        SnackBar(content: Text("يرجى اختيار معلم واحد على الأقل للحذف")),
       );
       return;
     }
@@ -398,7 +400,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
                     onPressed: () async {
                       for (String id in selectedIds) {
                         await FirebaseFirestore.instance
-                            .collection('admins')
+                            .collection('teachers')
                             .doc(id)
                             .delete();
                       }

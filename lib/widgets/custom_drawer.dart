@@ -2,18 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:map/screens/BarcodeScannerScreen.dart' as barcode;
 import 'package:map/screens/StudentSearchScreen.dart';
 import 'package:map/screens/add_parents_screen.dart';
 import 'package:map/screens/add_students_screen.dart' as student;
 import 'package:map/screens/add_teachers_screen.dart';
 import 'package:map/screens/home_screen.dart';
-import 'package:map/screens/BarcodeScannerScreen.dart' as barcode;
+import 'package:map/screens/teacher_list_screen.dart';
+
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:typed_data';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-
-import '../screens/attached excuses.dart';
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -71,15 +71,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
             },
           ),
           drawerItem(
-            title: "الأعذار المرفقة",
+            title: "المعلمين",
             icon: Icons.attachment,
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AttachedExcuses()),
+                MaterialPageRoute(builder: (context) => TeacherListScreen()),
               );
             },
           ),
+
           drawerItem(
             title: "مسح الباركود",
             icon: Icons.qr_code_scanner, // أيقونة من نوع IconData

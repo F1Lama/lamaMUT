@@ -1,6 +1,7 @@
 // class_screen.dart
 import 'package:flutter/material.dart';
-import 'select_class_screen.dart'; // استيراد صفحة اختيار الكلاس
+
+import 'select_class_screen.dart';
 
 class ClassScreen extends StatelessWidget {
   @override
@@ -8,10 +9,7 @@ class ClassScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text(
-          "المرحلة الدراسية",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text("المرحلة الدراسية", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -30,7 +28,8 @@ class ClassScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SelectClassScreen(stage: "أولى ثانوي"),
+                    builder:
+                        (context) => SelectClassScreen(stage: "أولى ثانوي"),
                   ),
                 );
               },
@@ -42,7 +41,8 @@ class ClassScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SelectClassScreen(stage: "ثاني ثانوي"),
+                    builder:
+                        (context) => SelectClassScreen(stage: "ثاني ثانوي"),
                   ),
                 );
               },
@@ -54,7 +54,8 @@ class ClassScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SelectClassScreen(stage: "ثالث ثانوي"),
+                    builder:
+                        (context) => SelectClassScreen(stage: "ثالث ثانوي"),
                   ),
                 );
               },

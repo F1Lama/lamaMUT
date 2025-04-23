@@ -26,7 +26,7 @@ class GuardianCustomDrawer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // مسافة صغيرة في الأعلى لتجنب أن يكون الخيار في أعلى الشاشة مباشرةً
-          const SizedBox(height: 20),
+          const SizedBox(height: 70),
 
           // خيار تسجيل الخروج بعد المسافة الصغيرة
           drawerItem(

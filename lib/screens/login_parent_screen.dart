@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:map/screens/agent_screen.dart'; // استيراد صفحة الوكيل
 import 'package:map/screens/parent_screen.dart';
 import 'package:map/screens/password_recovery_screen.dart';
-import 'children_screen.dart'; // استيراد شاشة التابعين
 
 class LoginParentScreen extends StatefulWidget {
   const LoginParentScreen({Key? key}) : super(key: key);
@@ -48,9 +48,13 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
 
       // التحقق من وجود الحساب في أي من المجموعتين
       if (parentQuery.docs.isNotEmpty) {
-        _validateAndNavigate(parentQuery.docs.first, password);
+        _validateAndNavigate(parentQuery.docs.first, password, isParent: true);
       } else if (authorizationQuery.docs.isNotEmpty) {
-        _validateAndNavigate(authorizationQuery.docs.first, password);
+        _validateAndNavigate(
+          authorizationQuery.docs.first,
+          password,
+          isParent: false,
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -69,7 +73,11 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
     }
   }
 
-  void _validateAndNavigate(DocumentSnapshot userDoc, String password) {
+  void _validateAndNavigate(
+    DocumentSnapshot userDoc,
+    String password, {
+    required bool isParent,
+  }) {
     var userData = userDoc.data() as Map<String, dynamic>;
     String storedPassword = userData['password'];
 
@@ -91,14 +99,18 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
       ),
     );
 
-    // الحصول على معرف ولي الأمر أو الموكل
+    // الحصول على معرف الحساب
     String guardianId = userData['id'];
 
-    // تحويل إلى صفحة التابعين مع تمرير guardianId
+    // تحويل إلى الصفحة المناسبة بناءً على نوع الحساب
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => GuardianScreen(guardianId: guardianId),
+        builder:
+            (context) =>
+                isParent
+                    ? GuardianScreen(guardianId: guardianId) // صفحة ولي الأمر
+                    : AgentScreen(agentId: guardianId), // صفحة الوكيل
       ),
     );
   }
@@ -111,7 +123,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
         backgroundColor: Colors.green,
         elevation: 0,
         title: const Text(
-          " تسجيل دخول ولي الأمر والوكيل",
+          "تسجيل دخول ولي الأمر والوكيل",
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -136,7 +148,7 @@ class _LoginParentScreenState extends State<LoginParentScreen> {
               height: 180,
             ),
             const SizedBox(height: 30),
-            _buildInputField(_idController, ' رقم الهوية  ', Icons.person),
+            _buildInputField(_idController, 'رقم الهوية', Icons.person),
             const SizedBox(height: 10),
             _buildInputField(
               _passwordController,

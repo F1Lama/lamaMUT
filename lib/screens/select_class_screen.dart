@@ -18,10 +18,7 @@ class SelectClassScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: Text(
-          stage,
-          style: TextStyle(color: Colors.white, fontSize: 20),
-        ),
+        title: Text(stage, style: TextStyle(color: Colors.white, fontSize: 20)),
         centerTitle: true,
       ),
       body: Center(
@@ -29,7 +26,8 @@ class SelectClassScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(6, (index) {
             final classNumber = index + 1; // أرقام الفصول من 1 إلى 6
-            final buttonText = '$stage/$classNumber'; // النص المطلوب (مثل "أولى ثانوي/1")
+            final buttonText =
+                '$stage/$classNumber'; // النص المطلوب (مثل "أولى ثانوي/1")
             return Column(
               children: [
                 CustomButtonAuth(
@@ -38,10 +36,12 @@ class SelectClassScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StudentsListScreen(
-                          stage: stage,
-                          schoolClass: '$classNumber', // تمرير رقم الفصل فقط للصفحة التالية
-                        ),
+                        builder:
+                            (context) => StudentsListScreen(
+                              stage: stage,
+                              schoolClass:
+                                  '$classNumber', // تمرير رقم الفصل فقط للصفحة التالية
+                            ),
                       ),
                     );
                   },

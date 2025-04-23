@@ -1,12 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // لإدارة المصادقة
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/widgets/custom_button_auth.dart';
-
-import '../widgets/custom_text_field.dart'; // لإدارة Firestore
 
 class AuthorizationScreen extends StatefulWidget {
-  final String guardianId; // معرف ولي الأمر المسجل
+  final String guardianId; // معرف ولي الأمر
+
   const AuthorizationScreen({Key? key, required this.guardianId})
     : super(key: key);
 
@@ -15,67 +13,22 @@ class AuthorizationScreen extends StatefulWidget {
 }
 
 class _AuthorizationScreenState extends State<AuthorizationScreen> {
+  // المتحكمات الخاصة بالحقول النصية
   final TextEditingController nameController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController dependentIdController = TextEditingController();
 
-  List<Map<String, dynamic>> allStudents = []; // جميع الطلاب المتاحين
-  List<Map<String, dynamic>> selectedStudents = []; // الطلاب المختارين
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchAvailableStudents(widget.guardianId);
-  }
-
-  // دالة لجلب جميع الطلاب المرتبطين بوالي الأمر
-  Future<void> _fetchAvailableStudents(String guardianId) async {
-    try {
-      final querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('students')
-              .where('guardianId', isEqualTo: guardianId)
-              .get();
-      setState(() {
-        allStudents =
-            querySnapshot.docs.map((doc) {
-              return {
-                "id": doc['id'],
-                "name": doc['name'],
-                "schoolClass": doc['schoolClass'],
-                "stage": doc['stage'],
-              };
-            }).toList();
-      });
-    } catch (e) {
-      print("❌ خطأ أثناء جلب بيانات الطلاب: $e");
-    }
-  }
-
-  // دالة لإضافة الطالب إلى القائمة المختارة
-  void _addStudent(Map<String, dynamic> student) {
-    setState(() {
-      if (!selectedStudents.contains(student)) {
-        selectedStudents.add(student);
-      }
-    });
-  }
-
-  // دالة لإزالة الطالب من القائمة المختارة
-  void _removeStudent(Map<String, dynamic> student) {
-    setState(() {
-      selectedStudents.remove(student);
-    });
-  }
+  // قائمة لتخزين التابعين المختارين
+  final List<Map<String, dynamic>> selectedDependents = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.green,
         title: Text('التوكيل', style: TextStyle(color: Colors.white)),
         centerTitle: true,
+        backgroundColor: Colors.green,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
@@ -88,125 +41,281 @@ class _AuthorizationScreenState extends State<AuthorizationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 40), // يبعد الحقول عن بداية الصفحة
-            CustomTextField(
+            const SizedBox(height: 40), // المسافة بين الحقول والشريط العلوي
+            // حقل اسم الوكيل
+            TextField(
               controller: nameController,
-              icon: Icons.person,
-              hintText: 'اسم الوكيل',
-              iconColor: Colors.blue,
+              decoration: InputDecoration(
+                labelText: 'اسم الوكيل',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person, color: Colors.blue),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.text,
+              style: const TextStyle(color: Colors.black),
             ),
-            CustomTextField(
-              controller: idController,
-              icon: Icons.badge,
-              hintText: 'رقم الهوية',
-              iconColor: Colors.blue,
-            ),
-            CustomTextField(
-              controller: passwordController,
-              icon: Icons.lock,
-              hintText: 'كلمة المرور',
-              iconColor: Colors.blue,
 
-              obscureText: true,
+            const SizedBox(height: 10),
+
+            // حقل رقم الهوية
+            TextField(
+              controller: idController,
+              decoration: InputDecoration(
+                labelText: 'رقم الهوية',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.badge, color: Colors.blue),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.black),
             ),
+
+            const SizedBox(height: 10),
+
+            // حقل كلمة المرور
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'كلمة المرور',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock, color: Colors.blue),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              obscureText: true,
+              style: const TextStyle(color: Colors.black),
+            ),
+
+            const SizedBox(height: 10),
+
+            // حقل هوية التابع
+            TextField(
+              controller: dependentIdController,
+              decoration: InputDecoration(
+                labelText: 'هوية التابع',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.group, color: Colors.blue),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.text,
+              style: const TextStyle(color: Colors.black),
+            ),
+
             const SizedBox(height: 20),
+
+            // زر إضافة التابع
+            ElevatedButton(
+              onPressed: () async {
+                final dependentId = dependentIdController.text.trim();
+                if (dependentId.isNotEmpty) {
+                  final dependent = await _validateDependent(dependentId);
+                  if (dependent != null) {
+                    _addDependent(dependent); // إضافة التابع إلى القائمة
+                    dependentIdController.clear(); // مسح الحقل
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("يرجى إدخال هوية التابع")),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 1, 113, 189),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: const Text("إضافة التابع"),
+            ),
+
+            const SizedBox(height: 20),
+
+            // عرض التابعين المختارين
             Text(
-              "الطلاب المختارون:",
+              "التابعون المختارون:",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: allStudents.length,
+                itemCount: selectedDependents.length,
                 itemBuilder: (context, index) {
-                  final student = allStudents[index];
-                  bool isSelected = selectedStudents.contains(student);
+                  final dependent = selectedDependents[index];
                   return ListTile(
-                    title: Text(student["name"]),
-                    subtitle: Text(
-                      "المرحلة: ${student["stage"]}, الصف: ${student["schoolClass"]}",
-                    ),
-                    trailing: Checkbox(
-                      value: isSelected,
-                      onChanged: (value) {
-                        if (value == true) {
-                          _addStudent(student);
-                        } else {
-                          _removeStudent(student);
-                        }
+                    title: Text(dependent["name"]),
+                    subtitle: Text("الهوية: ${dependent["id"]}"),
+                    trailing: IconButton(
+                      icon: Icon(Icons.remove_circle, color: Colors.red),
+                      onPressed: () {
+                        _removeDependent(dependent);
                       },
-                      activeColor: const Color.fromARGB(255, 1, 113, 189),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 40), // يبعد الزر عن الحقول
-            Center(
-              child: SizedBox(
-                width: 200, // جعل الزر بالوسط
-                child: CustomButtonAuth(
-                  title: 'تسجيل',
-                  onPressed: () async {
-                    if (await _validateFields(context)) {
-                      try {
-                        // إنشاء حساب جديد باستخدام Firebase Authentication
-                        final UserCredential userCredential = await FirebaseAuth
-                            .instance
-                            .createUserWithEmailAndPassword(
-                              email:
-                                  "${idController.text}@example.com", // استخدام رقم الموكل كبريد إلكتروني
-                              password: passwordController.text,
-                            );
-                        // استخراج معرف Firebase (uid) ليكون هو agentId
-                        final String agentId = userCredential.user!.uid;
 
-                        // حفظ بيانات الحساب في Firestore
-                        await FirebaseFirestore.instance
-                            .collection('Authorizations')
-                            .doc(agentId)
-                            .set({
-                              'name': nameController.text,
-                              'id': idController.text,
-                              'password': passwordController.text,
-                              'guardianId': widget.guardianId, // معرف ولي الأمر
-                            });
+            const SizedBox(height: 40),
 
-                        // حفظ بيانات الطلاب المختارين مع حساب الوكيل
-                        for (var student in selectedStudents) {
-                          await FirebaseFirestore.instance
-                              .collection('AgentStudents')
-                              .add({
-                                'agentId': agentId, // معرف الوكيل (uid)
-                                'studentId': student["id"], // معرف الطالب
-                                'studentName': student["name"], // اسم الطالب
-                                'stage': student["stage"], // المرحلة
-                                'schoolClass': student["schoolClass"], // الصف
-                              });
-                        }
-
-                        // عرض رسالة نجاح
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("تم تسجيل الحساب بنجاح")),
+            // زر تسجيل التوكيل
+            ElevatedButton(
+              onPressed: () async {
+                if (await _validateFields()) {
+                  try {
+                    // إنشاء حساب جديد باستخدام Firebase Authentication
+                    final userCredential = await FirebaseAuth.instance
+                        .createUserWithEmailAndPassword(
+                          email:
+                              "${idController.text}@example.com", // استخدام رقم الهوية كبريد إلكتروني
+                          password: passwordController.text,
                         );
 
-                        // إعادة تهيئة الحقول
-                        _clearFields();
-                      } catch (e) {
-                        // عرض رسالة خطأ
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("حدث خطأ أثناء التسجيل: $e")),
-                        );
-                      }
-                    }
-                  },
+                    // استخراج معرف Firebase (uid) ليكون هو agentId
+                    final String agentId = userCredential.user!.uid;
+
+                    // حفظ بيانات الحساب في Firestore
+                    await FirebaseFirestore.instance
+                        .collection('Authorizations')
+                        .doc(agentId)
+                        .set({
+                          'name': nameController.text,
+                          'id': idController.text,
+                          'password': passwordController.text,
+                          'guardianId': widget.guardianId, // معرف ولي الأمر
+                        });
+
+                    // حفظ بيانات التابعين المختارين مع حساب الوكيل
+                    await _saveDependentsToFirestore(agentId);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("تم تسجيل التوكيل بنجاح")),
+                    );
+                  } catch (e) {
+                    print("❌ خطأ أثناء التسجيل: $e");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("حدث خطأ أثناء تسجيل التوكيل"),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 1, 113, 189),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
                 ),
               ),
+              child: const Text("تسجيل"),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // دالة للتحقق من وجود التابع في Firestore
+  Future<Map<String, dynamic>?> _validateDependent(String dependentId) async {
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('students') // البحث في كولكشن الطلاب
+              .where('id', isEqualTo: dependentId) // التحقق من الحقل 'id'
+              .where(
+                'guardianId',
+                isEqualTo: widget.guardianId,
+              ) // التحقق من الحقل 'guardianId'
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final dependentData = querySnapshot.docs.first.data();
+        return {"id": dependentData['id'], "name": dependentData['name']};
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("هذا التابع غير مسجل كتابع لولي الأمر")),
+        );
+        return null;
+      }
+    } catch (e) {
+      print("❌ خطأ أثناء التحقق من التابع: $e");
+      return null;
+    }
+  }
+
+  // دالة لإضافة التابع إلى القائمة
+  void _addDependent(Map<String, dynamic> dependent) {
+    setState(() {
+      if (!selectedDependents.contains(dependent)) {
+        selectedDependents.add(dependent);
+      }
+    });
+  }
+
+  // دالة لإزالة التابع من القائمة
+  void _removeDependent(Map<String, dynamic> dependent) {
+    setState(() {
+      selectedDependents.remove(dependent);
+    });
+  }
+
+  // دالة للتحقق من صحة الحقول
+  Future<bool> _validateFields() async {
+    final name = nameController.text.trim();
+    final id = idController.text.trim();
+    final password = passwordController.text.trim();
+
+    // التحقق من أن جميع الحقول مملوءة
+    if (name.isEmpty || id.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("جميع الحقول مطلوبة لإكمال العملية")),
+      );
+      return false;
+    }
+
+    // التحقق من أن الـ ID غير مستخدم مسبقًا
+    final isIdAvailable = await _isIdAvailable(id);
+    if (!isIdAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("رقم الموكل هذا مستخدم مسبقًا")),
+      );
+      return false;
+    }
+
+    // التحقق من صيغة كلمة المرور
+    final passwordRegex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$',
+    );
+    if (!passwordRegex.hasMatch(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام",
+          ),
+        ),
+      );
+      return false;
+    }
+
+    return true;
   }
 
   // دالة للتحقق من أن الـ ID غير مستخدم مسبقًا
@@ -219,61 +328,26 @@ class _AuthorizationScreenState extends State<AuthorizationScreen> {
               .get();
       return querySnapshot.docs.isEmpty;
     } catch (e) {
-      print("حدث خطأ أثناء التحقق من الـ ID: $e");
+      print("❌ خطأ أثناء التحقق من الـ ID: $e");
       return false;
     }
   }
 
-  // دالة للتحقق من صحة الحقول
-  Future<bool> _validateFields(BuildContext context) async {
-    final name = nameController.text.trim();
-    final id = idController.text.trim();
-    final password = passwordController.text.trim();
-
-    if (name.isEmpty || !name.contains(" ")) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("يرجى إدخال اسم ثنائي صالح")));
-      return false;
-    }
-
-    if (id.isEmpty || int.tryParse(id) == null || id.length < 8) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("يرجى إدخال رقم هوية صالح")));
-      return false;
-    }
-
-    final isIdAvailable = await _isIdAvailable(id);
-    if (!isIdAvailable) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("رقم الموكل هذا مستخدم مسبقًا")));
-      return false;
-    }
-
-    final passwordRegex = RegExp(
-      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$',
-    );
-    if (!passwordRegex.hasMatch(password)) {
+  // دالة لحفظ بيانات التابعين في Firestore
+  Future<void> _saveDependentsToFirestore(String agentId) async {
+    try {
+      for (var dependent in selectedDependents) {
+        await FirebaseFirestore.instance.collection('AgentDependents').add({
+          'agentId': agentId, // معرف الوكيل (uid)
+          'dependentId': dependent["id"], // معرف التابع
+          'dependentName': dependent["name"], // اسم التابع
+        });
+      }
+    } catch (e) {
+      print("❌ خطأ أثناء حفظ بيانات التابعين: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام",
-          ),
-        ),
+        const SnackBar(content: Text("حدث خطأ أثناء حفظ بيانات التابعين")),
       );
-      return false;
     }
-
-    return true;
-  }
-
-  // دالة لإعادة تهيئة الحقول
-  void _clearFields() {
-    nameController.clear();
-    idController.clear();
-    passwordController.clear();
-    selectedStudents.clear();
   }
 }

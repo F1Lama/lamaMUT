@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map/providers/TeacherProvider.dart';
 import 'package:map/providers/UserProvider.dart';
 import 'package:map/screens/change_location_screen.dart';
+import 'package:map/screens/home_screen.dart';
 import 'package:map/screens/map_picker_screen.dart';
 import 'package:map/screens/map_screen.dart';
 import 'package:provider/provider.dart'; // استيراد Provider
@@ -49,6 +50,8 @@ class MyApp extends StatelessWidget {
         '/AdminScreen': (context) => AdminListScreen(), // شاشة قائمة المشرفين
              '/MapScreen': (context) => MapScreen(), // إذا كنت تستخدم شاشة الخريطة
         '/map_picker': (context) => MapPickerScreen(),
+            '/home': (context) => HomeScreen(), // تعريف الصفحة الرئيسية
+
       },
     );
   }
