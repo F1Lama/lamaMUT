@@ -13,7 +13,10 @@ class AttendenceNames extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.green,
         centerTitle: true,
-        title: Text("فصل $stage/$classNumber", style: TextStyle(color: Colors.white)),
+        title: Text(
+          "فصل $stage/$classNumber",
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -25,11 +28,12 @@ class AttendenceNames extends StatelessWidget {
           children: [
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('students')
-                    .where('stage', isEqualTo: stage)
-                    .where('schoolClass', isEqualTo: '$classNumber')
-                    .snapshots(),
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('students')
+                        .where('stage', isEqualTo: stage)
+                        .where('schoolClass', isEqualTo: '$classNumber')
+                        .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -42,9 +46,12 @@ class AttendenceNames extends StatelessWidget {
                   return ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
-                      final student = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                      final student =
+                          snapshot.data!.docs[index].data()
+                              as Map<String, dynamic>;
                       final name = student['name'];
-                      final status = student['status'] ?? 'غير معروف'; // حالة الطالب
+                      final status =
+                          student['status'] ?? 'غير معروف'; // حالة الطالب
 
                       Color statusColor;
                       switch (status) {
@@ -64,10 +71,7 @@ class AttendenceNames extends StatelessWidget {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            name,
-                            style: TextStyle(fontSize: 18),
-                          ),
+                          Text(name, style: TextStyle(fontSize: 18)),
                           SizedBox(width: 10),
                           Container(
                             width: 12,
@@ -89,7 +93,9 @@ class AttendenceNames extends StatelessWidget {
               color: Color.fromARGB(255, 1, 113, 189),
               textColor: Colors.white,
               child: Text("تعديل"),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
               height: 50,
               minWidth: double.infinity,
             ),

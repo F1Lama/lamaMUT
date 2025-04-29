@@ -1,32 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/screens/RequestDetailsScreen.dart';
+import 'package:intl/intl.dart';
+import 'RequestDetailsScreen.dart';
 
 class ExitPermitsScreen extends StatelessWidget {
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  // دالة لإضافة طلب تصريح خروج جديد إلى Firestore
-  static Future<void> addStudent({
-    required String studentName,
-    required String grade,
-    required String teacherName,
-    required String exitTime,
-  }) async {
-    try {
-      await firestore.collection('requests').add({
-        'studentName': studentName,
-        'grade': grade,
-        'teacherName': teacherName,
-        'exitTime': Timestamp.fromDate(
-          DateTime.parse(exitTime),
-        ), // تخزين الوقت كـ Timestamp
-        'status': 'active', // الحالة الافتراضية للطلب
-      });
-      print("تمت إضافة الطلب بنجاح.");
-    } catch (e) {
-      print("❌ خطأ أثناء إضافة الطلب: $e");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +18,7 @@ class ExitPermitsScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -50,12 +26,15 @@ class ExitPermitsScreen extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream:
               firestore
-                  .collection('requests')
+                  .collection('requests') // استخدام نفس المجموعة عند الحفظ
                   .where(
                     'status',
                     isEqualTo: 'active',
                   ) // عرض الطلبات النشطة فقط
-                  .orderBy('exitTime', descending: true)
+                  .orderBy(
+                    'exitTime',
+                    descending: true,
+                  ) // ترتيب الطلبات حسب وقت الخروج
                   .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -68,7 +47,7 @@ class ExitPermitsScreen extends StatelessWidget {
             if (requests.isEmpty) {
               return Center(
                 child: Text(
-                  "لا توجد تصاريح حتى الآن.",
+                  "لا توجد تصاريح نشطة حتى الآن.",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               );
@@ -89,43 +68,65 @@ class ExitPermitsScreen extends StatelessWidget {
                               studentName: data['studentName'],
                               grade: data['grade'],
                               teacherName: data['teacherName'],
-                              exitTime: exitTime.toString(),
+                              exitTime: DateFormat(
+                                'yyyy-MM-dd – HH:mm',
+                              ).format(exitTime),
                               requestId: request.id, // تمرير معرف الطلب
                             ),
                       ),
                     );
                   },
-                  child: Container(
-                    width: double.infinity,
+                  child: Card(
+                    elevation: 4,
                     margin: EdgeInsets.only(bottom: 12),
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "الطالبة: ${data['studentName']}",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "الطالبة: ${data['studentName']}",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          "الصف: ${data['grade']}",
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          "المعلمة: ${data['teacherName']}",
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          "وقت الخروج: ${exitTime.hour}:${exitTime.minute}",
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ],
+                          SizedBox(height: 8),
+                          Text(
+                            "الصف: ${data['grade']}",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "المعلمة: ${data['teacherName']}",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "وقت الخروج: ${DateFormat('hh:mm a').format(exitTime)}",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  await _deleteRequest(request.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("تم حذف الطلب بنجاح."),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -135,5 +136,16 @@ class ExitPermitsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // دالة لحذف الطلب
+  Future<void> _deleteRequest(String requestId) async {
+    try {
+      await firestore.collection('requests').doc(requestId).delete();
+      print("✅ تم حذف الطلب بنجاح.");
+    } catch (e) {
+      print("❌ خطأ أثناء حذف الطلب: $e");
+      rethrow;
+    }
   }
 }

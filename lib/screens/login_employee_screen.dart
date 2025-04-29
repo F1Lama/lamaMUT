@@ -4,7 +4,8 @@ import 'package:map/screens/admin_screen.dart';
 import 'package:map/screens/home_screen.dart';
 import 'package:map/screens/password_recovery_screen.dart';
 import 'package:map/screens/teacher_screen.dart';
-
+import 'package:provider/provider.dart'; // استيراد Provider
+import 'package:map/providers/TeacherProvider.dart'; // استيراد TeacherProvider
 
 class LoginEmployeeScreen extends StatefulWidget {
   const LoginEmployeeScreen({Key? key}) : super(key: key);
@@ -101,7 +102,11 @@ class _LoginEmployeeScreenState extends State<LoginEmployeeScreen> {
     if (role == "admin") {
       nextScreen = AdminScreen();
     } else {
-      // افترض أن هناك مدة محددة في بيانات المستخدم
+      // تخزين بيانات المعلم في TeacherProvider
+      final teacherProvider = Provider.of<TeacherProvider>(context, listen: false);
+      teacherProvider.setTeacherData(userData['id'], userData['name']);
+
+      // افتراض أن هناك مدة محددة في بيانات المستخدم
       int exitMinutes = userData['exitDuration'] ?? 10; // افتراضياً 10 دقائق
       nextScreen = StudyStageScreen(
         exitDuration: Duration(minutes: exitMinutes),

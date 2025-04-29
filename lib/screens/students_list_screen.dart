@@ -1,8 +1,7 @@
-// students_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:map/providers/TeacherProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:map/providers/TeacherProvider.dart';
 import 'time_selection_screen.dart'; // استيراد صفحة تحديد الوقت
 
 class StudentsListScreen extends StatefulWidget {
@@ -16,7 +15,6 @@ class StudentsListScreen extends StatefulWidget {
 }
 
 class _StudentsListScreenState extends State<StudentsListScreen> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   Map<String, bool> students = {};
   bool isLoading = true; // حالة التحميل
   String? selectedStudent; // الطالب المحدد
@@ -31,22 +29,14 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
     try {
       // استعلام Firestore للحصول على بيانات الطلاب
       final studentSnapshot =
-          await firestore
-              .collection('students') // المجموعة الجديدة
-              .where(
-                'stage',
-                isEqualTo: widget.stage.trim(),
-              ) // تصفية بناءً على المرحلة
-              .where(
-                'schoolClass',
-                isEqualTo: widget.schoolClass.trim(),
-              ) // تصفية بناءً على الصف
+          await FirebaseFirestore.instance
+              .collection('students')
+              .where('stage', isEqualTo: widget.stage.trim())
+              .where('schoolClass', isEqualTo: widget.schoolClass.trim())
               .get();
 
       // طباعة المستندات المسترجعة للتحقق
-      print(
-        "المستندات المسترجعة: ${studentSnapshot.docs.map((doc) => doc.data())}",
-      );
+      print("المستندات المسترجعة: ${studentSnapshot.docs.map((doc) => doc.data())}");
 
       if (mounted) {
         setState(() {
@@ -71,7 +61,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // الحصول على اسم المعلم من Provider
+    // الحصول على اسم المعلم من TeacherProvider
     final teacherProvider = Provider.of<TeacherProvider>(context);
     final teacherName = teacherProvider.teacherName ?? "غير محدد";
 
@@ -153,8 +143,6 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                                   studentName: selectedStudent!,
                                   grade:
                                       "${widget.stage} / ${widget.schoolClass}", // المرحلة والصف
-                                  teacherName:
-                                      teacherName, // اسم المعلمة من الجلسة
                                 ),
                           ),
                         );

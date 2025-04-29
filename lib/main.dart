@@ -7,6 +7,7 @@ import 'package:map/screens/change_location_screen.dart';
 import 'package:map/screens/home_screen.dart';
 import 'package:map/screens/map_picker_screen.dart';
 import 'package:map/screens/map_screen.dart';
+import 'package:map/screens/school_dashboard_screen.dart';
 import 'package:provider/provider.dart'; // استيراد Provider
 import 'firebase_options.dart'; // استيراد ملف التكوين
 import 'screens/add_admin_screen.dart';
@@ -15,11 +16,9 @@ import 'screens/login_screen.dart';
 import 'screens/welcome_screen.dart';
 
 void main() async {
-  // تهيئة Widgets وFirebase
   WidgetsFlutterBinding.ensureInitialized();
-  // تهيئة Firebase باستخدام التكوين من firebase_options.dart
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // تشغيل التطبيق
+
   runApp(
     MultiProvider(
       providers: [
@@ -51,7 +50,8 @@ class MyApp extends StatelessWidget {
              '/MapScreen': (context) => MapScreen(), // إذا كنت تستخدم شاشة الخريطة
         '/map_picker': (context) => MapPickerScreen(),
             '/home': (context) => HomeScreen(), // تعريف الصفحة الرئيسية
-
+ '/SchoolDashboardScreen':
+            (context) => SchoolDashboardScreen(),
       },
     );
   }

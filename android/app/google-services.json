@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "679675096170",
-    "project_id": "fir-75e4e",
-    "storage_bucket": "fir-75e4e.firebasestorage.app"
+    "project_number": "1067279037371",
+    "project_id": "mut2a-110cc",
+    "storage_bucket": "mut2a-110cc.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:679675096170:android:c2c513e5e6e3b609db6e13",
+        "mobilesdk_app_id": "1:1067279037371:android:d67f7db8e753b040dc4a9e",
         "android_client_info": {
           "package_name": "com.example.map"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD3WS7XAGRKUnZTqbFcBbyYCfjNQX5kk_8"
+          "current_key": "AIzaSyDdOH8IV1psa-zj2YK-Ild46b0kP0qhMfk"
         }
       ],
       "services": {

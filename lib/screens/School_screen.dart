@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:map/screens/requests_list_screen.dart';
 import 'package:map/widgets/custom_button_auth.dart';
 
-
-
 class SchoolScreen extends StatelessWidget {
   final String schoolName;
 
@@ -11,7 +9,7 @@ class SchoolScreen extends StatelessWidget {
 
   void _logout(BuildContext context) {
     print("تم تسجيل الخروج بنجاح");
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
@@ -88,6 +86,14 @@ class SchoolScreen extends StatelessWidget {
                       Navigator.pushNamed(context, '/MapScreen');
                     },
                   ),
+
+                  const SizedBox(height: 35),
+                  CustomButtonAuth(
+                    title: "وقت الحضور الصباحي",
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/SchoolDashboardScreen');
+                    },
+                  ),
                   const SizedBox(height: 35),
                   // زر جديد لعرض طلبات النداء
                   CustomButtonAuth(
@@ -95,9 +101,7 @@ class SchoolScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => RequestsListScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => CallScreen()),
                       );
                     },
                   ),

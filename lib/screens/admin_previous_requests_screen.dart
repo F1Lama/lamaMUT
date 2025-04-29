@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class AdminPreviousRequestsScreen extends StatefulWidget {
+class PreviousRequestsScreen extends StatefulWidget {
   @override
-  _AdminPreviousRequestsScreenState createState() =>
-      _AdminPreviousRequestsScreenState();
+  _PreviousRequestsScreenState createState() => _PreviousRequestsScreenState();
 }
 
-class _AdminPreviousRequestsScreenState
-    extends State<AdminPreviousRequestsScreen> {
+class _PreviousRequestsScreenState extends State<PreviousRequestsScreen> {
   DateTime? fromDate; // تاريخ البداية
   DateTime? toDate; // تاريخ النهاية
-  Stream<QuerySnapshot>? _filteredStream; // التدفق المفلتر
+  Stream<List<Map<String, dynamic>>>? _filteredStream; // التدفق المفلتر
 
   // دالة اختيار التاريخ
   Future<void> _selectDate(BuildContext context, bool isFromDate) async {
@@ -41,28 +39,53 @@ class _AdminPreviousRequestsScreenState
       );
       return;
     }
-
     setState(() {
-      _filteredStream =
-          FirebaseFirestore.instance
-              .collectionGroup(
-                'all_requests',
-              ) // استخدام collectionGroup إذا كنت تريد دمج الكولكشنين
-              .where(
-                'status',
-                isEqualTo: 'completed',
-              ) // عرض الطلبات المكتملة فقط
-              .where(
-                'timestamp',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate!),
-              )
-              .where(
-                'timestamp',
-                isLessThanOrEqualTo: Timestamp.fromDate(toDate!),
-              )
-              .orderBy('timestamp', descending: true)
-              .snapshots();
+      _filteredStream = _fetchFilteredRequests(fromDate!, toDate!);
     });
+  }
+
+  // جلب الطلبات المفلترة من Firestore
+  Stream<List<Map<String, dynamic>>> _fetchFilteredRequests(DateTime fromDate, DateTime toDate) async* {
+    // جلب الطلبات من الجدولين: requests و exitPermits
+    final requestsSnapshot = await FirebaseFirestore.instance
+        .collection('requests')
+        .where('status', isEqualTo: 'completed')
+        .where('exitTime', isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate))
+        .where('exitTime', isLessThanOrEqualTo: Timestamp.fromDate(toDate))
+        .get();
+
+    final exitPermitsSnapshot = await FirebaseFirestore.instance
+        .collection('exitPermits')
+        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate))
+        .where('timestamp', isLessThanOrEqualTo: Timestamp.fromDate(toDate))
+        .get();
+
+    // تحويل البيانات إلى قائمة موحدة
+    List<Map<String, dynamic>> allRequests = [];
+
+    for (var doc in requestsSnapshot.docs) {
+      allRequests.add({
+        'type': 'طلبات المعلمين',
+        'studentName': doc['studentName'] ?? 'غير معروف',
+        'grade': doc['grade'] ?? 'غير محدد',
+        'timestamp': (doc['exitTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      });
+    }
+
+    for (var doc in exitPermitsSnapshot.docs) {
+      allRequests.add({
+        'type': 'طلب استئذان',
+        'studentName': doc['studentName'] ?? 'غير معروف',
+        'grade': doc['grade'] ?? 'غير محدد',
+        'timestamp': (doc['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      });
+    }
+
+    // ترتيب الطلبات حسب التاريخ
+    allRequests.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+
+    // إرجاع القائمة كتدفق
+    yield allRequests;
   }
 
   @override
@@ -81,7 +104,7 @@ class _AdminPreviousRequestsScreenState
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // شريط اختيار التواريخ
+            // صف اختيار التاريخ
             Row(
               children: [
                 Expanded(
@@ -102,8 +125,7 @@ class _AdminPreviousRequestsScreenState
               ],
             ),
             SizedBox(height: 10),
-
-            // زر تطبيق الفلتر
+            // زر التصفية
             Align(
               alignment: Alignment.center,
               child: ElevatedButton.icon(
@@ -117,19 +139,11 @@ class _AdminPreviousRequestsScreenState
               ),
             ),
             SizedBox(height: 20),
-
             // قائمة الطلبات
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    _filteredStream ??
-                    FirebaseFirestore.instance
-                        .collectionGroup(
-                          'all_requests',
-                        ) // استخدام collectionGroup إذا كنت تريد دمج الكولكشنين
-                        .where('status', isEqualTo: 'completed')
-                        .orderBy('timestamp', descending: true)
-                        .snapshots(),
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _filteredStream ??
+                    _fetchFilteredRequests(DateTime(2000), DateTime(2100)), // عرض جميع الطلبات افتراضيًا
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Center(child: Text("حدث خطأ: ${snapshot.error}"));
@@ -137,15 +151,14 @@ class _AdminPreviousRequestsScreenState
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
-                  final requests = snapshot.data!.docs;
+                  final requests = snapshot.data!;
                   if (requests.isEmpty) {
                     return Center(child: Text("لا توجد طلبات."));
                   }
                   return ListView.builder(
                     itemCount: requests.length,
                     itemBuilder: (context, index) {
-                      final data =
-                          requests[index].data() as Map<String, dynamic>;
+                      final data = requests[index];
                       return _buildRequestTile(data);
                     },
                   );
@@ -180,12 +193,10 @@ class _AdminPreviousRequestsScreenState
 
   // ويدجت عرض الطلب
   Widget _buildRequestTile(Map<String, dynamic> data) {
-    final studentName = data['studentName'] ?? 'غير معروف';
-    final grade = data['grade'] ?? 'غير معروف';
-    final decision = data['decision'] ?? 'غير محدد';
-    final exitTime =
-        (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
-    final formattedExitTime = DateFormat('yyyy-MM-dd – HH:mm').format(exitTime);
+    final studentName = data['studentName'];
+    final grade = data['grade'];
+    final timestamp = data['timestamp'];
+    final formattedTimestamp = DateFormat('yyyy-MM-dd – HH:mm').format(timestamp);
 
     return Card(
       elevation: 3,
@@ -197,20 +208,17 @@ class _AdminPreviousRequestsScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "الطالب: $studentName",
+              "${data['type']}",
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 4),
+            Text("الطالب: $studentName", style: TextStyle(fontSize: 15)),
             SizedBox(height: 4),
             Text("الصف: $grade", style: TextStyle(fontSize: 15)),
             SizedBox(height: 4),
             Text(
-              "وقت الخروج: $formattedExitTime",
+              "التاريخ: $formattedTimestamp",
               style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "القرار: ${decision == 'accepted' ? 'مقبول' : 'مرفوض'}",
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ],
         ),

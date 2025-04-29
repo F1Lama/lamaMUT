@@ -62,10 +62,15 @@ class AddAdminScreen extends StatelessWidget {
   Future<void> addAdmin(BuildContext context) async {
     String name = nameController.text.trim();
     String id = idController.text.trim();
+    // التحقق من أن رقم الإداري يحتوي فقط على أرقام وطوله لا يزيد عن 10
+    if (!RegExp(r'^\d{10}$').hasMatch(id)) {
+      showSnackBar(context, "رقم الإداري يجب أن يتكون من ١٠ أرقام فقط");
+      return;
+    }
     String phone = phoneController.text.trim();
     String email = emailController.text.trim();
 
-    if (name.isEmpty || id.isEmpty || phone.isEmpty || email.isEmpty) {
+    if (name.isEmpty || id.isEmpty  ||phone.isEmpty || email.isEmpty) {
       showSnackBar(context, "يجب ملء جميع الحقول قبل الإضافة");
       return;
     }
@@ -121,8 +126,7 @@ class AddAdminScreen extends StatelessWidget {
     String password,
   ) async {
     final smtpServer = gmail(senderEmail, senderPassword);
-
-    final message =
+final message =
         Message()
           ..from = Address(senderEmail, 'Mutabie App')
           ..recipients.add(recipientEmail)

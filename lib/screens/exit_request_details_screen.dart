@@ -4,29 +4,26 @@ import 'package:url_launcher/url_launcher.dart';
 
 class RequestDetailsScreen extends StatelessWidget {
   final QueryDocumentSnapshot request;
+  final String studentName;
+  final String grade;
+  final String stage;
+  final String schoolClass;
+  final String schoolId;
 
-  const RequestDetailsScreen({Key? key, required this.request})
-    : super(key: key);
+  const RequestDetailsScreen({
+    Key? key,
+    required this.request,
+    required this.studentName,
+    required this.grade,
+    required this.stage,
+    required this.schoolClass,
+    required this.schoolId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // استرداد البيانات كخريطة
     final data = request.data() as Map<String, dynamic>;
 
-    // التحقق من أن البيانات ليست فارغة
-    if (data == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("خطأ")),
-        body: Center(child: Text("حدث خطأ أثناء جلب بيانات الطلب.")),
-      );
-    }
-
-    // استخراج الحقول بأمان
-    final studentName = data['studentName'] ?? 'غير محدد';
-    final grade =
-        data['grade']?.toString().isNotEmpty == true
-            ? data['grade']
-            : 'غير محدد';
     final reason = data['reason'] ?? 'غير محدد';
     final date = data['date'] ?? 'غير محدد';
     final time = data['time'] ?? 'غير محدد';
@@ -35,10 +32,10 @@ class RequestDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("تفاصيل الطلب", style: TextStyle(color: Colors.white)),
+        title: const Text("تفاصيل الطلب", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -47,9 +44,8 @@ class RequestDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // الصندوق الرمادي
             Container(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(10),
@@ -57,48 +53,22 @@ class RequestDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "الطالبة:",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(studentName, textAlign: TextAlign.center),
-                  SizedBox(height: 10),
-                  Text(
-                    "الصف:",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(grade.toString(), textAlign: TextAlign.center),
-                  SizedBox(height: 10),
-                  Text(
-                    "سبب الاستئذان:",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(reason, textAlign: TextAlign.center),
-                  SizedBox(height: 10),
-                  Text(
-                    "وقت الاستئذان:",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text("$time", textAlign: TextAlign.center),
+                  const Text("الطالبة:", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                  Text(studentName, textAlign: TextAlign.right),
+                  const SizedBox(height: 10),
+                  const Text("الصف:", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                  Text(grade.isNotEmpty ? grade : 'غير محدد', textAlign: TextAlign.right),
+                  const SizedBox(height: 10),
+                  const Text("سبب الاستئذان:", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                  Text(reason, textAlign: TextAlign.right),
+                  const SizedBox(height: 10),
+                  const Text("وقت الاستئذان:", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                  Text(time, textAlign: TextAlign.right),
                 ],
               ),
             ),
-
-            // زر عرض الملف (إذا وُجد)
             if (attachedFileUrl != null && attachedFileUrl.isNotEmpty) ...[
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   try {
@@ -106,15 +76,17 @@ class RequestDetailsScreen extends StatelessWidget {
                     if (await canLaunchUrl(uri)) {
                       await launchUrl(uri);
                     } else {
-                      throw Exception('Failed to launch URL');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("لا يمكن فتح الرابط")),
+                      );
                     }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("حدث خطأ أثناء فتح الملف")),
+                      const SnackBar(content: Text("حدث خطأ أثناء فتح الملف")),
                     );
                   }
                 },
-                child: Text("عرض الملف", style: TextStyle(color: Colors.blue)),
+                child: const Text("عرض الملف", style: TextStyle(color: Colors.blue)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey[200],
                   elevation: 0,
@@ -124,14 +96,14 @@ class RequestDetailsScreen extends StatelessWidget {
                 ),
               ),
             ] else ...[
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("لا يوجد ملف لعرضه")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("لا يوجد ملف لعرضه")),
+                  );
                 },
-                child: Text("عرض الملف", style: TextStyle(color: Colors.blue)),
+                child: const Text("عرض الملف", style: TextStyle(color: Colors.blue)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey[200],
                   elevation: 0,
@@ -141,35 +113,14 @@ class RequestDetailsScreen extends StatelessWidget {
                 ),
               ),
             ],
-
-            // أزرار القبول والرفض
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('requests')
-                            .doc(request.id)
-                            .update({
-                              'status': 'completed',
-                              'decision': 'accepted',
-                              'timestamp': FieldValue.serverTimestamp(),
-                            });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("تم قبول الطلب")),
-                        );
-                        Navigator.pop(context); // العودة إلى الشاشة السابقة
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("حدث خطأ أثناء قبول الطلب")),
-                        );
-                      }
-                    },
-                    child: Text("قبول", style: TextStyle(color: Colors.white)),
+                    onPressed: () => _handleDecision(context, 'accepted'),
+                    child: const Text("قبول", style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
                       shape: RoundedRectangleBorder(
@@ -178,30 +129,11 @@ class RequestDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('excuses')
-                            .doc(request.id)
-                            .update({
-                              'status': 'completed',
-                              'decision': 'accepted', // أو 'rejected'
-                              'timestamp': FieldValue.serverTimestamp(),
-                            });
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text("تم رفض الطلب")));
-                        Navigator.pop(context); // العودة إلى الشاشة السابقة
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("حدث خطأ أثناء رفض الطلب")),
-                        );
-                      }
-                    },
-                    child: Text("رفض", style: TextStyle(color: Colors.white)),
+                    onPressed: () => _handleDecision(context, 'rejected'),
+                    child: const Text("رفض", style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
                       shape: RoundedRectangleBorder(
@@ -216,5 +148,37 @@ class RequestDetailsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleDecision(BuildContext context, String decision) async {
+    try {
+      final excuseData = request.data() as Map<String, dynamic>;
+
+      // إضافة نسخة من الطلب إلى exitPermits
+      await FirebaseFirestore.instance.collection('exitPermits').add({
+        ...excuseData,
+        'decision': decision,
+        'status': 'completed',
+        'timestamp': FieldValue.serverTimestamp(),
+        'schoolId': schoolId, // ✅ تمرير schoolId مع الطلب الجديد
+      });
+
+      // حذف الطلب من excuses
+      await FirebaseFirestore.instance
+          .collection('excuses')
+          .doc(request.id)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(decision == 'accepted' ? "تم قبول الطلب" : "تم رفض الطلب"),
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("حدث خطأ أثناء معالجة الطلب")),
+      );
+    }
   }
 }

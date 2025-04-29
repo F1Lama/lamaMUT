@@ -119,8 +119,7 @@ class AddTeacherScreen extends StatelessWidget {
 
         'createdAt': Timestamp.now(),
       });
-
-      await sendEmail(email, name, id, password, specialty);
+await sendEmail(email, name, id, password, specialty);
       showSnackBar(
         context,
         "تمت إضافة المعلم بنجاح، وتم إرسال كلمة المرور عبر البريد",
@@ -254,8 +253,7 @@ class AddTeacherScreen extends StatelessWidget {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
-
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -282,7 +280,7 @@ class AddTeacherScreen extends StatelessWidget {
             CustomTextField(
               controller: idController,
               icon: Icons.badge,
-              hintText: "رقم المعلم",
+              hintText: "رقم هوية المعلم",
               iconColor: _iconColor, // لون الأيقونة
             ),
             SizedBox(height: 15),

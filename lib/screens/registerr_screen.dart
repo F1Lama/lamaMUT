@@ -27,9 +27,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // المرحلة
   String? selectedStage;
   final List<String> schoolStages = ['ابتدائي', 'متوسط', 'ثانوي'];
-
   // بيانات المرسل
-  final String senderEmail = "8ffaay01@gmail.com"; // ✉️ بريد المرسل
+  final String senderEmail = "8ffaay01@gmail.com"; // ✉ بريد المرسل
   final String senderPassword = "vljn jaxv hukr qbct"; // 🔑 كلمة مرور التطبيق
 
   Future<LatLng?> _getCurrentLocation() async {
@@ -117,17 +116,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showErrorDialog('يرجى إدخال موقع المدرسة.');
       return;
     }
-
-    // التحقق من كلمة المرور
-    String passwordPattern =
-        r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&\.]).{8,}$';
-    RegExp regExp = RegExp(passwordPattern);
-    if (password.isEmpty || !regExp.hasMatch(password)) {
-      _showErrorDialog(
-        'كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز، وطول لا يقل عن ٨ أحرف.',
+    if (password.isEmpty || password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('كلمة المرور يجب أن تكون بطول 6 أحرف أو أكثر')),
       );
       return;
     }
+    // التحقق من كلمة المرور
 
     if (password != confirmPassword) {
       _showErrorDialog('كلمات المرور غير متطابقة.');
@@ -142,14 +137,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       double? latitude;
       double? longitude;
+
       try {
-        var locations = await locationFromAddress(schoolLocation);
-        if (locations.isNotEmpty) {
-          latitude = locations.first.latitude;
-          longitude = locations.first.longitude;
+        List<String> coordinates = schoolLocation.split(',');
+        if (coordinates.length == 2) {
+          latitude = double.tryParse(coordinates[0].trim());
+          longitude = double.tryParse(coordinates[1].trim());
         }
       } catch (e) {
-        print('خطأ في تحويل العنوان إلى إحداثيات: $e');
+        print('⚠️ خطأ في تحليل schoolLocation إلى إحداثيات: $e');
       }
 
       await FirebaseFirestore.instance
@@ -163,6 +159,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'email': email,
             'stage': selectedStage,
             'createdAt': DateTime.now(),
+            'attendanceStartTime':
+                '07:30', // ✅ إضافة حقل الوقت كقيمة فاضية عند التسجيل
           });
 
       // ✅ إرسال البريد الإلكتروني بعد إنشاء الحساب

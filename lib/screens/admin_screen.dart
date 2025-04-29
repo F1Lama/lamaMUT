@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:map/screens/Permission_screen.dart';
 import 'package:map/screens/admin_previous_requests_screen.dart';
-import 'package:map/screens/teacher_previous_requests_screen.dart';
+
 import '../widgets/custom_button.dart'; // استيراد الزر الصحيح
 import '../widgets/custom_drawer.dart';
 import 'exit_permits_screen.dart';
-import 'attend_class_screen.dart' hide CustomButton; // إخفاء الزر المتعارض
+import 'attend_class_screen.dart' hide CustomButton;
 
 class AdminScreen extends StatelessWidget {
   @override
@@ -77,10 +77,11 @@ class AdminScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ClassScreen()),
+                  MaterialPageRoute(builder: (context) => ClassScreen()),
                   );
                 },
               ),
+
               const SizedBox(height: 35),
               CustomButton(
                 title: "الطلبات السابقة",

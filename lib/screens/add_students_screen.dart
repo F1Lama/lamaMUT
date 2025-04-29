@@ -42,6 +42,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
   Future<void> _generateQR() async {
     String name = _nameController.text.trim();
     String id = _idController.text.trim();
+
     String guardianId = _guardianIdController.text.trim();
     String phone = _phoneController.text.trim();
 
@@ -52,8 +53,8 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
     }
 
     // التحقق من طول رقم الهوية ليكون 10 أرقام
-    if (id.length != 10) {
-      _showSnackBar('رقم الهوية يجب أن يكون 10 أرقام');
+    if (!RegExp(r'^\d{10}$').hasMatch(id)) {
+      _showSnackBar('رقم الهوية يجب أن يتكون من ١٠ أرقام فقط');
       return;
     }
 
@@ -79,7 +80,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
     // جلب البريد الإلكتروني لولي الأمر
     String? emailFromDb = await _getGuardianEmail(guardianId);
     if (emailFromDb == null) {
-      _showSnackBar('لم يتم العثور على البريد الإلكتروني لولي الأمر');
+      _showSnackBar('لا يوجد حساب لولي الأمر');
       return;
     }
 
@@ -109,7 +110,6 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
         guardianId,
         phone,
       );
-
       // التنقل إلى صفحة عرض بطاقة الطالب
       Navigator.push(
         context,
@@ -217,7 +217,6 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
                         ),
                       ),
                       pw.SizedBox(height: 16),
-
                       // معلومات الطالب
                       pw.Text("الاسم: $name", style: pw.TextStyle(font: ttf)),
                       pw.Text(
@@ -233,7 +232,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
                         style: pw.TextStyle(font: ttf),
                       ),
                       pw.Text(
-                        "رقم ولي الأمر: $guardianId",
+                        "رقم هوية ولي الأمر: $guardianId",
                         style: pw.TextStyle(font: ttf),
                       ),
                       pw.Text(
@@ -337,12 +336,11 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
               // حقل رقم ولي الأمر
               _buildTextField(
                 _guardianIdController,
-                "رقم ولي الأمر",
+                "رقم هوية ولي الأمر",
                 Icons.person_outline,
                 isNumber: true,
               ),
               const SizedBox(height: 10),
-
               // حقل رقم الهاتف
               _buildTextField(
                 _phoneController,
@@ -356,7 +354,7 @@ class _StudentBarcodeScreenState extends State<StudentBarcodeScreen> {
               ElevatedButton(
                 onPressed: _generateQR,
                 child: const Text(
-                  'إنشاء بطاقة الطالب',
+                  'اضافة  الطالب',
                   style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(

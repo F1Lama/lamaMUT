@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:map/screens/AgentChildrenScreen.dart';
+import 'package:map/widgets/custom_button.dart' show CustomButton;
 import 'package:map/widgets/guardian_custom_drawer.dart';
-import 'AgentChildrenScreen.dart'; // صفحة التابعين
-import 'children_screen.dart'; // صفحة التابعين
 
 class AgentScreen extends StatelessWidget {
   final String agentId; // معرف الوكيل
-  const AgentScreen({Key? key, required this.agentId}) : super(key: key);
+  final String guardianId; // معرف ولي الأمر
+
+  const AgentScreen({
+    super.key,
+    required this.agentId,
+    required this.guardianId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +32,20 @@ class AgentScreen extends StatelessWidget {
         ),
         actions: [
           Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer(); // فتح القائمة الجانبية من الجهة اليمنى
-              },
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(
+                      context,
+                    ).openEndDrawer(); // فتح القائمة الجانبية من الجهة اليمنى
+                  },
+                ),
           ),
         ],
       ),
-      endDrawer: GuardianCustomDrawer(), // استخدام القائمة الجانبية من الجهة اليمنى
+      endDrawer:
+          GuardianCustomDrawer(), // استخدام القائمة الجانبية من الجهة اليمنى
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: Column(
@@ -49,45 +59,16 @@ class AgentScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        AgentChildrenScreen(agentId: agentId), // استخدام agentId هنا
+                    builder:
+                        (context) => AgentChildrenScreen(
+                          agentId: agentId,
+                          guardianId: guardianId, // تمرير guardianId هنا
+                        ),
                   ),
                 );
               },
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ودجة الزر المخصصة
-class CustomButton extends StatelessWidget {
-  final String title;
-  final void Function()? onPressed;
-  const CustomButton({super.key, required this.title, this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 60,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 1, 113, 189),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
         ),
       ),
     );
